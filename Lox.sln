@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lox", "Lox\Lox.csproj", "{98B46600-6669-4D1A-AC0E-DD58A7150F44}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoxMain", "LoxMain\LoxMain.csproj", "{98B46600-6669-4D1A-AC0E-DD58A7150F44}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoxTests", "LoxTests\LoxTests.csproj", "{4035C64A-64DA-4456-946C-4496807EF215}"
 EndProject

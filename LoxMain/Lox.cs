@@ -1,16 +1,16 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 /// <summary>
-/// Lox interpreter written in concert with reading "Crafting Interpreters"
+/// LoxMain interpreter written in concert with reading "Crafting Interpreters"
 /// by Robert Nystrom.
 /// </summary>
-public class Lox
+public static class Lox
 {
     public static void Main(String[] args)
     {
         const Int32 invalidUsage = 64;
 
-        Console.WriteLine("Lox interpreter");
+        Console.WriteLine("LoxMain interpreter");
         if (args.Length > 1)
         {
             Console.Error.WriteLine("Usage: cslox [script]");
