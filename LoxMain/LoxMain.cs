@@ -1,10 +1,8 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-/// <summary>
+﻿/// <summary>
 /// LoxMain interpreter written in concert with reading "Crafting Interpreters"
 /// by Robert Nystrom.
 /// </summary>
-public static class Lox
+public static class LoxMain
 {
     public static void Main(String[] args)
     {
