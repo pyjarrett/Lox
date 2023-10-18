@@ -44,11 +44,14 @@ public class Lox
     /// </summary>
     private static void RunPrompt()
     {
-        string? line = ReadPrompt();
-        while (line != null)
+        while (true)
         {
+            string? line = ReadPrompt();
+            if (line == null)
+            {
+                break;
+            }
             Run(line);
-            line = ReadPrompt();
         }
     }
 
