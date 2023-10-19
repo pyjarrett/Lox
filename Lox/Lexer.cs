@@ -8,22 +8,36 @@ namespace Lox;
 /// </summary>
 public class Lexer
 {
-    private string Text { get; init; } = "";
-    private List<Token> Tokens { get; } = new();
-
-    private int lineNumber = 1;
-
     /// <summary>
-    /// The lexer produces a slice of text which gets put into tokens.  This
-    /// is more efficient that copying one character at a time. 
+    /// Creates a new Lexer to break the given text into tokens.
     /// </summary>
-    private int startIndex = 0;
-
-    private int currentIndex = 0;
-
     public Lexer(string text)
     {
         Text = text;
+    }
+
+    /// <summary>
+    /// Produces a list of all tokens from the text.
+    /// </summary>
+    public List<Token> ScanTokens()
+    {
+        // Don't keep appending to the token list if this function gets called
+        // multiple times.
+        if (Tokens.Count > 0)
+        {
+            return Tokens;
+        }
+
+        // Process until there's no text left.
+        while (!IsAtEnd())
+        {
+            // Move the current slice ahead.
+            startIndex = currentIndex;
+            ScanNextToken();
+        }
+
+        Tokens.Add(new Token(TokenKind.EndOfFile, "", lineNumber));
+        return Tokens;
     }
 
     /// <summary>
@@ -63,18 +77,42 @@ public class Lexer
         char c = Advance();
         switch (c)
         {
-            case '(': AddToken(TokenKind.LeftParen); break;
-            case ')': AddToken(TokenKind.RightParen); break;
-            case '{': AddToken(TokenKind.LeftBrace); break;
-            case '}': AddToken(TokenKind.RightBrace); break;
-            case ',': AddToken(TokenKind.Comma); break;
-            case '.': AddToken(TokenKind.Dot); break;
-            case ';': AddToken(TokenKind.Semicolon); break;
-            case '+': AddToken(TokenKind.Plus); break;
-            case '-': AddToken(TokenKind.Minus); break;
-            case '*': AddToken(TokenKind.Star); break;
-            case '/': AddToken(TokenKind.Slash); break;
-            case '=': AddToken(TokenKind.Equal); break;
+            case '(':
+                AddToken(TokenKind.LeftParen);
+                break;
+            case ')':
+                AddToken(TokenKind.RightParen);
+                break;
+            case '{':
+                AddToken(TokenKind.LeftBrace);
+                break;
+            case '}':
+                AddToken(TokenKind.RightBrace);
+                break;
+            case ',':
+                AddToken(TokenKind.Comma);
+                break;
+            case '.':
+                AddToken(TokenKind.Dot);
+                break;
+            case ';':
+                AddToken(TokenKind.Semicolon);
+                break;
+            case '+':
+                AddToken(TokenKind.Plus);
+                break;
+            case '-':
+                AddToken(TokenKind.Minus);
+                break;
+            case '*':
+                AddToken(TokenKind.Star);
+                break;
+            case '/':
+                AddToken(TokenKind.Slash);
+                break;
+            case '=':
+                AddToken(TokenKind.Equal);
+                break;
             default:
                 break;
         }
@@ -89,27 +127,19 @@ public class Lexer
         Tokens.Add(new Token(kind, CurrentSlice(), lineNumber));
     }
 
+    private string Text { get; init; } = "";
+    private List<Token> Tokens { get; } = new();
+
+    private int lineNumber = 1;
+
     /// <summary>
-    /// Produces a list of all tokens from the text.
+    /// The lexer produces a slice of text which gets put into tokens.  This
+    /// is more efficient that copying one character at a time. 
     /// </summary>
-    public List<Token> ScanTokens()
-    {
-        // Don't keep appending to the token list if this function gets called
-        // multiple times.
-        if (Tokens.Count > 0)
-        {
-            return Tokens;
-        }
+    private int startIndex = 0;
 
-        // Process until there's no text left.
-        while (!IsAtEnd())
-        {
-            // Move the current slice ahead.
-            startIndex = currentIndex;
-            ScanNextToken();
-        }
-
-        Tokens.Add(new Token(TokenKind.EndOfFile, "", lineNumber));
-        return Tokens;
-    }
+    /// <summary>
+    /// Ending index of the slice.
+    /// </summary>
+    private int currentIndex = 0;
 }
