@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.IO.Compression;
 
 namespace Lox;
 
@@ -41,6 +40,11 @@ public class Lexer
     }
 
     /// <summary>
+    /// Tracks whether or not an error occurred when scanning tokens.
+    /// </summary>
+    public bool HasError { get; private set; } = false;
+
+    /// <summary>
     /// Produces the slice give by the current slice cursor positions.
     /// </summary>
     private string CurrentSlice()
@@ -77,6 +81,7 @@ public class Lexer
         char c = Advance();
         switch (c)
         {
+            // Single character tokens.
             case '(':
                 AddToken(TokenKind.LeftParen);
                 break;
@@ -98,6 +103,8 @@ public class Lexer
             case ';':
                 AddToken(TokenKind.Semicolon);
                 break;
+            
+            // Operate and assign in-place operators are not supported in Lox.
             case '+':
                 AddToken(TokenKind.Plus);
                 break;
@@ -107,15 +114,39 @@ public class Lexer
             case '*':
                 AddToken(TokenKind.Star);
                 break;
+            
+            // Multiple character tokens.
             case '/':
                 AddToken(TokenKind.Slash);
                 break;
             case '=':
                 AddToken(TokenKind.Equal);
                 break;
+            
+            // Skip whitespace
+            case ' ':
+            case '\r':
+            case '\t':
+                break;
+            
+            // Skip newlines
+            case '\n':
+                ++lineNumber;
+                break;
+            
             default:
+                Error($"Unable to parse token, at character {c} at {lineNumber}");
                 break;
         }
+    }
+
+    /// <summary>
+    /// Reports a parse error.
+    /// </summary>
+    private void Error(string message)
+    {
+        HasError = true;
+        Console.Error.WriteLine(message);
     }
 
     /// <summary>
