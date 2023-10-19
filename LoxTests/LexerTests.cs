@@ -35,6 +35,23 @@ public class LexerTests
         });
     }
 
+    [TestMethod]
+    public void TestUnterminatedString()
+    {
+        Lexer lexer = new("\"unterminated string!");
+        lexer.ScanTokens();
+        Assert.IsTrue(lexer.HasError);
+    }
+
+    [TestMethod]
+    public void TestLineComment()
+    {
+        VerifyTokens("    //  this is a test", new()
+        {
+            new(TokenKind.EndOfFile, "", 1),
+        });
+    }
+
     private void VerifyTokens(string text, List<Token> expected)
     {
         Lexer lexer = new(text);
