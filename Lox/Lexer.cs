@@ -73,6 +73,21 @@ public class Lexer
     private char Advance() => Text[currentIndex++];
 
     /// <summary>
+    /// A conditional version of Advance, which only moves forward when the
+    /// given character is matched.
+    /// </summary>
+    private bool Match(char c)
+    {
+        if (IsAtEnd() || Text[currentIndex] != c)
+        {
+            return false;
+        }
+
+        ++currentIndex;
+        return true;
+    }
+
+    /// <summary>
     /// Attempts to try to scan the next token.
     /// </summary>
     private void ScanNextToken()
@@ -103,7 +118,7 @@ public class Lexer
             case ';':
                 AddToken(TokenKind.Semicolon);
                 break;
-            
+
             // Operate and assign in-place operators are not supported in Lox.
             case '+':
                 AddToken(TokenKind.Plus);
@@ -114,30 +129,86 @@ public class Lexer
             case '*':
                 AddToken(TokenKind.Star);
                 break;
-            
+
             // Multiple character tokens.
-            case '/':
-                AddToken(TokenKind.Slash);
-                break;
             case '=':
-                AddToken(TokenKind.Equal);
+                AddToken(Match('=') ? TokenKind.EqualEqual : TokenKind.Equal);
                 break;
-            
+            case '!':
+                AddToken(Match('=') ? TokenKind.NotEqual : TokenKind.Not);
+                break;
+            case '<':
+                AddToken(Match('=') ? TokenKind.LessThanOrEqual : TokenKind.LessThan);
+                break;
+            case '>':
+                AddToken(Match('=') ? TokenKind.GreaterThanOrEqual : TokenKind.GreaterThan);
+                break;
+
+            case '/':
+                if (Match('/'))
+                {
+                    // This is a line comment, proceed until an end of line or
+                    // end of the text.
+                    while (!IsAtEnd() && Peek() != '\n')
+                    {
+                        Advance();
+                    }
+                }
+                else
+                {
+                    AddToken(TokenKind.Slash);
+                }
+                break;
+
             // Skip whitespace
             case ' ':
             case '\r':
             case '\t':
                 break;
-            
+
             // Skip newlines
             case '\n':
                 ++lineNumber;
                 break;
             
+            case '"':
+                ScanString();
+                break;
+            
             default:
+                
+                // TODO: Number
+                
+                // TODO: Keyword
+                
+                // TODO: Identifiers
+                
+                // Unhandled character type.
                 Error($"Unable to parse token, at character {c} at {lineNumber}");
                 break;
         }
+    }
+
+    /// <summary>
+    /// Scan a string token, assuming that the starting index is currently at
+    /// an open double quote.  Note that escaped characters are not handled.
+    /// </summary>
+    private void ScanString()
+    {
+        // Continue scanning until end of input or finding a '"'.
+        while (Peek() != '\0')
+        {
+            // String terminator.
+            if (Advance() == '"')
+            {
+                var slice = CurrentSlice();
+                AddToken(TokenKind.String, slice.Substring(1, slice.Length - 2));
+                return;
+            }
+        }
+        
+        // Could not find the end of the string.
+        Error($"Unterminated string starting at ${currentIndex}");
     }
 
     /// <summary>
@@ -153,9 +224,9 @@ public class Lexer
     /// Adds a new token with the current parse state with the current slice
     /// and line number.
     /// </summary>
-    private void AddToken(TokenKind kind)
+    private void AddToken(TokenKind kind, object literal = null)
     {
-        Tokens.Add(new Token(kind, CurrentSlice(), lineNumber));
+        Tokens.Add(new Token(kind, CurrentSlice(), lineNumber, literal));
     }
 
     private string Text { get; init; } = "";
