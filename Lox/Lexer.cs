@@ -222,7 +222,7 @@ public class Lexer
                     }
                     else
                     {
-                        AddToken(TokenKind.Identifier, CurrentSlice());
+                        AddToken(TokenKind.Identifier);
                     }
                 }
                 else

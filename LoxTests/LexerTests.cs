@@ -75,7 +75,7 @@ public class LexerTests
         CollectionAssert.AreEqual(expected, actual);
         CollectionAssert.AreEqual(actual, lexer.ScanTokens());
     }
-
+    
     /// <summary>
     /// Test a simple function definition.
     /// </summary>
@@ -87,23 +87,65 @@ public class LexerTests
 }", new()
         {
             new(TokenKind.Fun, "fun", 1),
-            new(TokenKind.Identifier, "sum", 1, "sum"),
+            new(TokenKind.Identifier, "sum", 1),
             new(TokenKind.LeftParen, "(", 1), 
-            new(TokenKind.Identifier, "a", 1, "a"),
+            new(TokenKind.Identifier, "a", 1),
             new(TokenKind.Comma, ",", 1),
-            new(TokenKind.Identifier, "b", 1, "b"),
+            new(TokenKind.Identifier, "b", 1),
             new(TokenKind.RightParen, ")", 1),
             new(TokenKind.LeftBrace, "{", 1),
             
             new(TokenKind.Return, "return", 2),
-            new(TokenKind.Identifier, "a", 2, "a"),
+            new(TokenKind.Identifier, "a", 2),
             new(TokenKind.Plus, "+", 2),
-            new(TokenKind.Identifier, "b", 2, "b"),
+            new(TokenKind.Identifier, "b", 2),
             new(TokenKind.Semicolon, ";", 2),
             
             new(TokenKind.RightBrace, "}", 3),
             
             new(TokenKind.EndOfFile, "", 3),
+        });
+    }
+
+    [TestMethod]
+    public void ClassDefinition()
+    {
+        VerifyTokens(@"class Vector2f {
+    init(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}", new()
+        {
+            new(TokenKind.Class, "class", 1),
+            new(TokenKind.Identifier, "Vector2f", 1),
+            new(TokenKind.LeftBrace, "{", 1), 
+            
+            new(TokenKind.Identifier, "init", 2),
+            new(TokenKind.LeftParen, "(", 2), 
+            new(TokenKind.Identifier, "x", 2),
+            new(TokenKind.Comma, ",", 2),
+            new(TokenKind.Identifier, "y", 2),
+            new(TokenKind.RightParen, ")", 2),
+            new(TokenKind.LeftBrace, "{", 2),
+            
+            new(TokenKind.This, "this", 3),
+            new(TokenKind.Dot, ".", 3),
+            new(TokenKind.Identifier, "x", 3),
+            new(TokenKind.Equal, "=", 3),
+            new(TokenKind.Identifier, "x", 3),
+            new(TokenKind.Semicolon, ";", 3),
+            
+            new(TokenKind.This, "this", 4),
+            new(TokenKind.Dot, ".", 4),
+            new(TokenKind.Identifier, "y", 4),
+            new(TokenKind.Equal, "=", 4),
+            new(TokenKind.Identifier, "y", 4),
+            new(TokenKind.Semicolon, ";", 4),
+            
+            new(TokenKind.RightBrace, "}", 5),
+            new(TokenKind.RightBrace, "}", 6),
+            new(TokenKind.EndOfFile, "", 6),
         });
     }
 
