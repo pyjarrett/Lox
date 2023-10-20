@@ -17,15 +17,6 @@ public class LexerTests
     }
 
     [TestMethod]
-    public void UnknownTokenParse()
-    {
-        Lexer lexer = new Lexer("this is a bad parse");
-        var actual = lexer.ScanTokens();
-        var expected = new List<Token>();
-        Assert.IsTrue(lexer.HasError);
-    }
-
-    [TestMethod]
     public void TestString()
     {
         VerifyTokens("\"A string\"", new()
@@ -69,7 +60,7 @@ public class LexerTests
     /// Ensure that multiple scans return the same set of tokens.
     /// </summary>
     [TestMethod]
-     public void TestMultipleScanTokens()
+    public void TestMultipleScanTokens()
     {
         Lexer lexer = new("0 100 200.0");
         List<Token> actual = lexer.ScanTokens();
@@ -83,6 +74,37 @@ public class LexerTests
         Assert.IsFalse(lexer.HasError);
         CollectionAssert.AreEqual(expected, actual);
         CollectionAssert.AreEqual(actual, lexer.ScanTokens());
+    }
+
+    /// <summary>
+    /// Test a simple function definition.
+    /// </summary>
+    [TestMethod]
+    public void TestFunctionDefinition()
+    {
+        VerifyTokens(@"fun sum(a, b) {
+    return a + b;
+}", new()
+        {
+            new(TokenKind.Fun, "fun", 1),
+            new(TokenKind.Identifier, "sum", 1, "sum"),
+            new(TokenKind.LeftParen, "(", 1), 
+            new(TokenKind.Identifier, "a", 1, "a"),
+            new(TokenKind.Comma, ",", 1),
+            new(TokenKind.Identifier, "b", 1, "b"),
+            new(TokenKind.RightParen, ")", 1),
+            new(TokenKind.LeftBrace, "{", 1),
+            
+            new(TokenKind.Return, "return", 2),
+            new(TokenKind.Identifier, "a", 2, "a"),
+            new(TokenKind.Plus, "+", 2),
+            new(TokenKind.Identifier, "b", 2, "b"),
+            new(TokenKind.Semicolon, ";", 2),
+            
+            new(TokenKind.RightBrace, "}", 3),
+            
+            new(TokenKind.EndOfFile, "", 3),
+        });
     }
 
     private void VerifyTokens(string text, List<Token> expected)

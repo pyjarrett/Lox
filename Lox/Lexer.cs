@@ -7,6 +7,29 @@ namespace Lox;
 /// </summary>
 public class Lexer
 {
+    static Lexer()
+    {
+        keywordsToTokenKinds = new Dictionary<string, TokenKind>()
+        {
+            { "and", TokenKind.And },
+            { "class", TokenKind.Class },
+            { "else", TokenKind.Else },
+            { "false", TokenKind.False },
+            { "fun", TokenKind.Fun },
+            { "for", TokenKind.For },
+            { "if", TokenKind.If },
+            { "nil", TokenKind.Nil },
+            { "or", TokenKind.Or },
+            { "print", TokenKind.Print },
+            { "return", TokenKind.Return },
+            { "super", TokenKind.Super },
+            { "this", TokenKind.This },
+            { "true", TokenKind.True },
+            { "var", TokenKind.Var },
+            { "while", TokenKind.While },
+        };
+    }
+
     /// <summary>
     /// Creates a new Lexer to break the given text into tokens.
     /// </summary>
@@ -185,17 +208,29 @@ public class Lexer
                 if (Char.IsDigit(c))
                 {
                     ScanNumber();
-                    return;
+                }
+                else if (Char.IsLetter(c))
+                {
+                    while (char.IsLetterOrDigit(Peek()))
+                    {
+                        Advance();
+                    }
+
+                    if (keywordsToTokenKinds.ContainsKey(CurrentSlice()))
+                    {
+                        AddToken(keywordsToTokenKinds[CurrentSlice()]);
+                    }
+                    else
+                    {
+                        AddToken(TokenKind.Identifier, CurrentSlice());
+                    }
                 }
                 else
                 {
-                    // TODO: Keyword
-
-                    // TODO: Identifiers                    
+                    // Unhandled character type.
+                    Error($"Unable to parse token, at character {c} at {lineNumber}");
                 }
 
-                // Unhandled character type.
-                Error($"Unable to parse token, at character {c} at {lineNumber}");
                 break;
         }
     }
@@ -244,13 +279,13 @@ public class Lexer
         {
             // Skip the '.'
             Advance();
-            
+
             while (char.IsDigit(Peek()))
             {
                 Advance();
             }
         }
-        
+
         // Parse and add the value for use as the literal.
         double value = 0;
         if (double.TryParse(CurrentSlice(), out value))
@@ -280,6 +315,11 @@ public class Lexer
     {
         Tokens.Add(new Token(kind, CurrentSlice(), lineNumber, literal));
     }
+
+    /// <summary>
+    /// Maps between lexemes of keywords and their associated token kinds.
+    /// </summary>
+    private static Dictionary<string, TokenKind> keywordsToTokenKinds;
 
     private string Text { get; init; } = "";
     private List<Token> Tokens { get; } = new();
