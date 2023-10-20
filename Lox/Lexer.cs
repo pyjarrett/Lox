@@ -182,6 +182,21 @@ public class Lexer
                         Advance();
                     }
                 }
+                else if (Match('*'))
+                {
+                    // Lox Extension (4.4): Support for C block comments
+                    while (!IsAtEnd() && !(Peek() == '*' && PeekNext() == '/'))
+                    {
+                        if (Peek() == '\n')
+                        {
+                            ++lineNumber;
+                        }
+                        Advance();
+                    }
+                    // Eat "*/"
+                    Advance();
+                    Advance();
+                }
                 else
                 {
                     AddToken(TokenKind.Slash);
