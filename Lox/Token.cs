@@ -32,6 +32,7 @@ public enum TokenKind
     // Tokens which contain literals.
     Identifier,
     String,
+    Number,
 
     // Keywords.
     And,
@@ -62,4 +63,5 @@ public enum TokenKind
 /// <param name="Lexeme"></param>
 /// <param name="LineNumber"></param>
 /// <param name="Literal">The literal value of the token if it has one, such as the value of an integer literal.</param>
-public readonly record struct Token(TokenKind Kind, string Lexeme, long LineNumber, object? Literal = null);
+public readonly record struct Token
+    (TokenKind Kind, string Lexeme, long LineNumber, object? Literal = null);

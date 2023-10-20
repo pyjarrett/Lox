@@ -68,6 +68,11 @@ public class Lexer
     private char Peek() => IsAtEnd() ? '\0' : Text[currentIndex];
 
     /// <summary>
+    /// The character after the current one, or a null character.
+    /// </summary>
+    private char PeekNext() => currentIndex + 1 >= Text.Length ? '\0' : Text[currentIndex + 1];
+
+    /// <summary>
     /// Moves to the next character.
     /// </summary>
     private char Advance() => Text[currentIndex++];
@@ -158,6 +163,7 @@ public class Lexer
                 {
                     AddToken(TokenKind.Slash);
                 }
+
                 break;
 
             // Skip whitespace
@@ -170,19 +176,24 @@ public class Lexer
             case '\n':
                 ++lineNumber;
                 break;
-            
+
             case '"':
                 ScanString();
                 break;
-            
+
             default:
-                
-                // TODO: Number
-                
-                // TODO: Keyword
-                
-                // TODO: Identifiers
-                
+                if (Char.IsDigit(c))
+                {
+                    ScanNumber();
+                    return;
+                }
+                else
+                {
+                    // TODO: Keyword
+
+                    // TODO: Identifiers                    
+                }
+
                 // Unhandled character type.
                 Error($"Unable to parse token, at character {c} at {lineNumber}");
                 break;
@@ -206,9 +217,50 @@ public class Lexer
                 return;
             }
         }
-        
+
         // Could not find the end of the string.
-        Error($"Unterminated string starting at ${currentIndex}");
+        Error($"Unterminated string starting at {currentIndex}");
+    }
+
+    /// <summary>
+    /// Scans a possible integer or decimal.
+    /// </summary>
+    ///
+    /// Numbers can look like:
+    /// * `[:digit:]+`
+    /// * `[:digit:]+.[:digit:]+`
+    private void ScanNumber()
+    {
+        Debug.Assert(char.IsDigit(Text[startIndex]));
+
+        // Scan leading digits.  Continue until something else is found.
+        while (char.IsDigit(Peek()))
+        {
+            Advance();
+        }
+
+        // Look for the decimal part followed by a number.
+        if (Peek() == '.' && char.IsDigit(PeekNext()))
+        {
+            // Skip the '.'
+            Advance();
+            
+            while (char.IsDigit(Peek()))
+            {
+                Advance();
+            }
+        }
+        
+        // Parse and add the value for use as the literal.
+        double value = 0;
+        if (double.TryParse(CurrentSlice(), out value))
+        {
+            AddToken(TokenKind.Number, value);
+        }
+        else
+        {
+            Error($"Unable to parse number literal {CurrentSlice()}");
+        }
     }
 
     /// <summary>
@@ -224,7 +276,7 @@ public class Lexer
     /// Adds a new token with the current parse state with the current slice
     /// and line number.
     /// </summary>
-    private void AddToken(TokenKind kind, object literal = null)
+    private void AddToken(TokenKind kind, object? literal = null)
     {
         Tokens.Add(new Token(kind, CurrentSlice(), lineNumber, literal));
     }
