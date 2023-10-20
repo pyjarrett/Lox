@@ -33,9 +33,10 @@ public class Lexer
     /// <summary>
     /// Creates a new Lexer to break the given text into tokens.
     /// </summary>
-    public Lexer(string text)
+    public Lexer(string text, bool supportNestedBlockComments = true)
     {
         Text = text;
+        this.supportNestedBlockComments = supportNestedBlockComments;
     }
 
     /// <summary>
@@ -182,20 +183,11 @@ public class Lexer
                         Advance();
                     }
                 }
-                else if (Match('*'))
+                else if (Peek() == '*' && supportNestedBlockComments)
                 {
-                    // Lox Extension (4.4): Support for C block comments
-                    while (!IsAtEnd() && !(Peek() == '*' && PeekNext() == '/'))
-                    {
-                        if (Peek() == '\n')
-                        {
-                            ++lineNumber;
-                        }
-                        Advance();
-                    }
-                    // Eat "*/"
+                    // Eat "*"
                     Advance();
-                    Advance();
+                    ScanNestedComment();
                 }
                 else
                 {
@@ -314,6 +306,54 @@ public class Lexer
     }
 
     /// <summary>
+    /// Scan potentially nested C-style block comments. e.g. "/* .. /* ... /* ... */ .. /* ... */ ... */ ...*/".
+    /// </summary>
+    private void ScanNestedComment()
+    {
+        var nestedDepth = 1;
+        while (nestedDepth > 0)
+        {
+            // Lox Extension (4.4): Support for C block comments
+            while (!IsAtEnd() && !(Peek() == '*' && PeekNext() == '/'))
+            {
+                // Block comments can span multiple lines.
+                if (Peek() == '\n')
+                {
+                    ++lineNumber;
+                    Advance();
+                }
+                else if (Peek() == '/' && PeekNext() == '*')
+                {
+                    // Descend into another nested block comment.
+                    ++nestedDepth;
+
+                    // Eat "/*"
+                    Advance();
+                    Advance();
+                }
+                else
+                {
+                    // Consume comment internals.
+                    Advance();
+                }
+            }
+
+            // Terminated before backing out of all nested comments.
+            if (IsAtEnd())
+            {
+                Error("Unterminated block comment.");
+                break;
+            }
+
+            // Eat "*/"
+            Advance();
+            Advance();
+
+            --nestedDepth;
+        }
+    }
+
+    /// <summary>
     /// Reports a parse error.
     /// </summary>
     private void Error(string message)
@@ -337,6 +377,7 @@ public class Lexer
     private static Dictionary<string, TokenKind> keywordsToTokenKinds;
 
     private string Text { get; init; } = "";
+    private bool supportNestedBlockComments = true;
     private List<Token> Tokens { get; } = new();
 
     private int lineNumber = 1;

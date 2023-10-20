@@ -30,9 +30,7 @@ public class LexerTests
     [TestMethod]
     public void TestUnterminatedString()
     {
-        Lexer lexer = new("\"unterminated string!");
-        lexer.ScanTokens();
-        Assert.IsTrue(lexer.HasError);
+        VerifyError("\"unterminated string!");
     }
 
     [TestMethod]
@@ -58,6 +56,14 @@ public class LexerTests
     }
 
     [TestMethod]
+    public void TestUnterminatedBlockComment()
+    {
+        VerifyError(@"/* This is a multiple line
+unterminated and /* nested */ 
+block comment");
+    }
+
+    [TestMethod]
     public void TestMultilineBlockComment()
     {
         VerifyTokens(@"/*
@@ -73,6 +79,30 @@ fun doesSomething()", new()
             new(TokenKind.RightParen, ")", 6),
             new(TokenKind.EndOfFile, "", 6),
         });
+    }
+
+    [TestMethod]
+    public void TestMultilineNestedBlockComment()
+    {
+        VerifyTokens(@"/*
+* A function /*which does something.*/
+* It has /*no /*parameters.*/*/
+* More description.
+*/
+fun doesSomething()", new()
+        {
+            new(TokenKind.Fun, "fun", 6),
+            new(TokenKind.Identifier, "doesSomething", 6),
+            new(TokenKind.LeftParen, "(", 6),
+            new(TokenKind.RightParen, ")", 6),
+            new(TokenKind.EndOfFile, "", 6),
+        });
+    }
+
+    [TestMethod]
+    public void TestBlockCommentsDisable()
+    {
+        VerifyError("foo(/* won't work */)", supportBlockComments: false);
     }
 
     [TestMethod]
@@ -187,5 +217,12 @@ fun doesSomething()", new()
         List<Token> actual = lexer.ScanTokens();
         Assert.IsFalse(lexer.HasError);
         CollectionAssert.AreEqual(expected, actual);
+    }
+
+    private void VerifyError(string text, bool supportBlockComments = true)
+    {
+        Lexer lexer = new(text, supportBlockComments);
+        lexer.ScanTokens();
+        Assert.IsTrue(lexer.HasError);
     }
 }
