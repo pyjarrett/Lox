@@ -2,10 +2,9 @@ namespace LoxTests;
 
 using Lox;
 
-[TestClass]
 public class LexerTests
 {
-    [TestMethod]
+    [Fact]
     public void SingleTokenParse()
     {
         VerifyTokens(", -", new()
@@ -17,7 +16,7 @@ public class LexerTests
         );
     }
 
-    [TestMethod]
+    [Fact]
     public void TestString()
     {
         VerifyTokens("\"A string\"", new()
@@ -27,13 +26,13 @@ public class LexerTests
         });
     }
 
-    [TestMethod]
+    [Fact]
     public void TestUnterminatedString()
     {
         VerifyError("\"unterminated string!");
     }
 
-    [TestMethod]
+    [Fact]
     public void TestLineComment()
     {
         VerifyTokens("    //  this is a test", new()
@@ -42,7 +41,7 @@ public class LexerTests
         });
     }
 
-    [TestMethod]
+    [Fact]
     public void TestInlineComment()
     {
         VerifyTokens("foo( /* enabled */ false)", new()
@@ -55,7 +54,7 @@ public class LexerTests
         });
     }
 
-    [TestMethod]
+    [Fact]
     public void TestUnterminatedBlockComment()
     {
         VerifyError(@"/* This is a multiple line
@@ -63,7 +62,7 @@ unterminated and /* nested */
 block comment");
     }
 
-    [TestMethod]
+    [Fact]
     public void TestMultilineBlockComment()
     {
         VerifyTokens(@"/*
@@ -81,7 +80,7 @@ fun doesSomething()", new()
         });
     }
 
-    [TestMethod]
+    [Fact]
     public void TestMultilineNestedBlockComment()
     {
         VerifyTokens(@"/*
@@ -99,13 +98,13 @@ fun doesSomething()", new()
         });
     }
 
-    [TestMethod]
+    [Fact]
     public void TestBlockCommentsDisable()
     {
         VerifyError("foo(/* won't work */)", supportBlockComments: false);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestScanNumberLiteral()
     {
         VerifyTokens("0 123 0.5 2.0", new()
@@ -121,7 +120,7 @@ fun doesSomething()", new()
     /// <summary>
     /// Ensure that multiple scans return the same set of tokens.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void TestMultipleScanTokens()
     {
         Lexer lexer = new("0 100 200.0");
@@ -133,15 +132,15 @@ fun doesSomething()", new()
             new(TokenKind.Number, "200.0", 1, 200.0),
             new(TokenKind.EndOfFile, "", 1),
         };
-        Assert.IsFalse(lexer.HasError);
-        CollectionAssert.AreEqual(expected, actual);
-        CollectionAssert.AreEqual(actual, lexer.ScanTokens());
+        Assert.False(lexer.HasError);
+        Assert.Equal(expected, actual);
+        Assert.Equal(actual, lexer.ScanTokens());
     }
 
     /// <summary>
     /// Test a simple function definition.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void TestFunctionDefinition()
     {
         VerifyTokens(@"fun sum(a, b) {
@@ -169,7 +168,7 @@ fun doesSomething()", new()
         });
     }
 
-    [TestMethod]
+    [Fact]
     public void ClassDefinition()
     {
         VerifyTokens(@"class Vector2f {
@@ -211,7 +210,7 @@ fun doesSomething()", new()
         });
     }
 
-    [TestMethod]
+    [Fact]
     public void AssignmentToExpression()
     {
         VerifyTokens("var a = -4 / 8.0;", new()
@@ -228,19 +227,19 @@ fun doesSomething()", new()
         });
         
     }
-
+    
     private void VerifyTokens(string text, List<Token> expected)
     {
         Lexer lexer = new(text);
         List<Token> actual = lexer.ScanTokens();
-        Assert.IsFalse(lexer.HasError);
-        CollectionAssert.AreEqual(expected, actual);
+        Assert.False(lexer.HasError);
+        Assert.Equal(expected, actual);
     }
 
     private void VerifyError(string text, bool supportBlockComments = true)
     {
         Lexer lexer = new(text, supportBlockComments);
         lexer.ScanTokens();
-        Assert.IsTrue(lexer.HasError);
+        Assert.True(lexer.HasError);
     }
 }
