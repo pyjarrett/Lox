@@ -211,6 +211,24 @@ fun doesSomething()", new()
         });
     }
 
+    [TestMethod]
+    public void AssignmentToExpression()
+    {
+        VerifyTokens("var a = -4 / 8.0;", new()
+        {
+            new(TokenKind.Var, "var", 1),
+            new(TokenKind.Identifier, "a", 1),
+            new (TokenKind.Equal, "=", 1),
+            new (TokenKind.Minus, "-", 1),
+            new (TokenKind.Number, "4", 1, 4.0),
+            new(TokenKind.Slash, "/", 1),
+            new (TokenKind.Number, "8.0", 1, 8.0),
+            new (TokenKind.Semicolon, ";", 1),
+            new (TokenKind.EndOfFile, "", 1),
+        });
+        
+    }
+
     private void VerifyTokens(string text, List<Token> expected)
     {
         Lexer lexer = new(text);
