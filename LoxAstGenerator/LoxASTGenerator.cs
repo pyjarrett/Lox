@@ -37,7 +37,7 @@ public static class LoxASTGenerator
         Console.WriteLine("Usage: generate_ast <output_directory>");
         System.Environment.Exit(1);
     }
-
+    
     public readonly record struct Variable(
         [property: XmlAttribute] string Type,
         [property: XmlAttribute] string Name);
@@ -48,6 +48,7 @@ public static class LoxASTGenerator
 
     public readonly record struct Group(
         [property: XmlAttribute] string Base,
+        [property: XmlArrayItem("Using")] string[] Usings,
         SubType[] SubTypes);
 
     public readonly record struct ASTDefn(Group[] Groups);
@@ -84,8 +85,16 @@ public static class LoxASTGenerator
         
         using (StreamWriter file = new StreamWriter(groupFileName))
         {
-            file.WriteLine("using LoxLexer;");
-            file.WriteLine();
+            if (group.Usings.Length > 0)
+            {
+                foreach (var dependency in group.Usings)
+                {
+                    file.WriteLine($"using {dependency};");
+                }
+                
+                file.WriteLine();
+            }
+            
             file.WriteLine("namespace LoxAst;");
             file.WriteLine();
             

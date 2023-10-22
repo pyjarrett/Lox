@@ -3,6 +3,9 @@
 <ASTDefn>
     <Groups>
         <Group Base="Expr">
+            <Usings>
+                <Using>LoxLexer</Using>
+            </Usings>
             <SubTypes>
                 <SubType Name="Binary">
                     <Variables>
@@ -16,12 +19,12 @@
                         <Variable Type="Expr" Name="Expression"/>
                     </Variables>
                 </SubType>
-                <SubType Name = "Literal">
+                <SubType Name="Literal">
                     <Variables>
                         <Variable Type="object" Name="Value"/>
                     </Variables>
                 </SubType>
-                <SubType Name = "Unary">
+                <SubType Name="Unary">
                     <Variables>
                         <Variable Type="Token" Name="Operator"/>
                         <Variable Type="Expr" Name="Right"/>
