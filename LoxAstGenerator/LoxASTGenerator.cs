@@ -84,7 +84,7 @@ public static class LoxASTGenerator
         
         using (StreamWriter file = new StreamWriter(groupFileName))
         {
-            file.WriteLine("using Lox;");
+            file.WriteLine("using LoxLexer;");
             file.WriteLine();
             file.WriteLine("namespace LoxAst;");
             file.WriteLine();

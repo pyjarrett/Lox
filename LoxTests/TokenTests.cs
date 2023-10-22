@@ -1,6 +1,6 @@
 ﻿namespace LoxTests;
 
-using Lox;
+using LoxLexer;
 
 public class TokenTests
 {

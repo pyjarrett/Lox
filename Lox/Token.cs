@@ -1,4 +1,4 @@
-﻿namespace Lox;
+﻿namespace LoxLexer;
 
 /// <summary>
 /// Tokens have an associated Kind which is used to efficiently assign and

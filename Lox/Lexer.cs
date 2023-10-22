@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Lox;
+namespace LoxLexer;
 
 /// <summary>
 /// Produces a sequence of tokens from a block of text.
