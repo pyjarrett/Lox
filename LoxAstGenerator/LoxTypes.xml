@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- This could be JSON, but the XML version here is shorter -->
+<ASTDefn>
+    <Groups>
+        <Group Base="Expr">
+            <SubTypes>
+                <SubType Name="Binary">
+                    <Variables>
+                        <Variable Type="Expr" Name="Left"/>
+                        <Variable Type="Token" Name="Operator"/>
+                        <Variable Type="Expr" Name="Right"/>
+                    </Variables>
+                </SubType>
+                <SubType Name="Grouping">
+                    <Variables>
+                        <Variable Type="Expr" Name="Expression"/>
+                    </Variables>
+                </SubType>
+                <SubType Name = "Literal">
+                    <Variables>
+                        <Variable Type="object" Name="Value"/>
+                    </Variables>
+                </SubType>
+                <SubType Name = "Unary">
+                    <Variables>
+                        <Variable Type="Token" Name="Operator"/>
+                        <Variable Type="Expr" Name="Right"/>
+                    </Variables>
+                </SubType>
+            </SubTypes>
+        </Group>
+    </Groups>
+</ASTDefn>
