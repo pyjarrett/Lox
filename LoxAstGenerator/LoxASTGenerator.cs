@@ -37,7 +37,7 @@ public static class LoxASTGenerator
         Console.WriteLine("Usage: generate_ast <output_directory>");
         System.Environment.Exit(1);
     }
-    
+
     public readonly record struct Variable(
         [property: XmlAttribute] string Type,
         [property: XmlAttribute] string Name);
@@ -82,7 +82,7 @@ public static class LoxASTGenerator
         Console.WriteLine($"Writing group {group.Base} to {groupFileName}.");
 
         var visitorName = $"I{group.Base}Visitor<TRetType>";
-        
+
         using (StreamWriter file = new StreamWriter(groupFileName))
         {
             if (group.Usings.Length > 0)
@@ -91,22 +91,23 @@ public static class LoxASTGenerator
                 {
                     file.WriteLine($"using {dependency};");
                 }
-                
+
                 file.WriteLine();
             }
-            
+
             file.WriteLine("namespace LoxAst;");
             file.WriteLine();
-            
+
             // Write the visitor to visit all node types.
             file.WriteLine($"public interface {visitorName} {{");
             foreach (var subType in group.SubTypes)
             {
-                file.WriteLine($"    TRetType Visit{subType.Name}{group.Base}({subType.Name} node);");
+                file.WriteLine($"    TRetType Visit{subType.Name}{group.Base}({subType.Name}{group.Base} node);");
             }
+
             file.WriteLine("}");
             file.WriteLine();
-            
+
             file.WriteLine($"public interface {group.Base} {{");
             file.WriteLine($"    TRetType Accept<TRetType>({visitorName} visitor);");
             file.WriteLine("}");
@@ -116,8 +117,8 @@ public static class LoxASTGenerator
             {
                 var variables = subType.Variables.Select(variable => $"{variable.Type} {variable.Name}").ToArray();
                 file.WriteLine(
-                    $"public readonly record struct {subType.Name} ({string.Join(", ", variables)}) : {group.Base} {{");
-                
+                    $"public readonly record struct {subType.Name}{group.Base} ({string.Join(", ", variables)}) : {group.Base} {{");
+
                 file.WriteLine($"    public TRetType Accept<TRetType>({visitorName} visitor) {{");
                 file.WriteLine($"        return visitor.Visit{subType.Name}{group.Base}(this);");
                 file.WriteLine("    }");
