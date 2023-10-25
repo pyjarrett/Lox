@@ -1,4 +1,8 @@
-﻿/// <summary>
+﻿using LoxInterpreter;
+using LoxLexer;
+using LoxParser;
+
+/// <summary>
 /// LoxMain interpreter written in concert with reading "Crafting Interpreters"
 /// by Robert Nystrom.
 /// </summary>
@@ -27,7 +31,10 @@ public static class LoxMain
     /// Interprets the given text.
     private static void Run(string text)
     {
-        Console.WriteLine($"Interpreting: {text}");
+        Lexer lexer = new Lexer(text);
+        Parser parser = new Parser(lexer.ScanTokens());
+        var expr = parser.Expression();
+        interpreter.Interpret(expr);
     }
 
     /// Runs the contents of a file as script.
@@ -59,4 +66,6 @@ public static class LoxMain
         Console.Write(" > ");
         return Console.ReadLine();
     }
+
+    private static Interpreter interpreter = new Interpreter();
 }

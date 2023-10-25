@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>Lox</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\LoxInterpreter\LoxInterpreter.csproj" />
+      <ProjectReference Include="..\LoxAst\LoxAst.csproj" />
+      <ProjectReference Include="..\LoxParser\LoxParser.csproj" />
+      <ProjectReference Include="..\Lox\LoxLexer.csproj" />
     </ItemGroup>
 
 </Project>
