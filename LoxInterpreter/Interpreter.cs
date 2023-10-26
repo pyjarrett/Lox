@@ -21,45 +21,52 @@ public class Interpreter : IExprVisitor<object?>
 {
     public void Interpret(Expr expr)
     {
-        var value = expr.Accept(this);
-        Console.WriteLine(value);
+        try
+        {
+            var value = expr.Accept(this);
+            Console.WriteLine(value);
+        }
+        catch (RuntimeError runtimeError)
+        {
+            Console.Error.WriteLine($"Runtime Error at {runtimeError.Source}: {runtimeError.Message}");
+        }
     }
-    
+
+    public object? Evaluate(Expr expr)
+    {
+        return expr.Accept(this);
+    }
+
     public object? VisitBinaryExpr(BinaryExpr node)
     {
         var left = node.Left.Accept(this);
         var right = node.Right.Accept(this);
 
-        if (left == null || right == null)
-        {
-            throw new Exception("Binary operation with nullable operand.");
-        }
-
         switch (node.Operator.Kind)
         {
             case TokenKind.Plus:
-                checkNumberOperands(node.Operator, left, right);
+                CheckNumberOperands(node.Operator, left, right);
                 return (double)left + (double)right;
             case TokenKind.Minus:
-                checkNumberOperands(node.Operator, left, right);
+                CheckNumberOperands(node.Operator, left, right);
                 return (double)left - (double)right;
             case TokenKind.Star:
-                checkNumberOperands(node.Operator, left, right);
+                CheckNumberOperands(node.Operator, left, right);
                 return (double)left * (double)right;
             case TokenKind.Slash:
-                checkNumberOperands(node.Operator, left, right);
+                CheckNumberOperands(node.Operator, left, right);
                 return (double)left / (double)right;
             case TokenKind.LessThan:
-                checkNumberOperands(node.Operator, left, right);
+                CheckNumberOperands(node.Operator, left, right);
                 return (double)left < (double)right;
             case TokenKind.LessThanOrEqual:
-                checkNumberOperands(node.Operator, left, right);
+                CheckNumberOperands(node.Operator, left, right);
                 return (double)left <= (double)right;
             case TokenKind.GreaterThan:
-                checkNumberOperands(node.Operator, left, right);
+                CheckNumberOperands(node.Operator, left, right);
                 return (double)left > (double)right;
             case TokenKind.GreaterThanOrEqual:
-                checkNumberOperands(node.Operator, left, right);
+                CheckNumberOperands(node.Operator, left, right);
                 return (double)left >= (double)right;
             case TokenKind.NotEqual:
                 return !AreEqual(left, right);
@@ -72,7 +79,7 @@ public class Interpreter : IExprVisitor<object?>
 
     public object? VisitGroupingExpr(GroupingExpr node)
     {
-        return node.Accept(this);
+        return node.Expression.Accept(this);
     }
 
     public object? VisitLiteralExpr(LiteralExpr node)
@@ -87,28 +94,28 @@ public class Interpreter : IExprVisitor<object?>
         {
             case TokenKind.Plus:
             {
-                if (value != null && value is double d)
+                if (value is double d)
                 {
                     return d;
                 }
 
-                throw new NotImplementedException();
+                break;
             }
 
             case TokenKind.Minus:
             {
-                if (value != null && value is double d)
+                if (value is double d)
                 {
                     return -d;
                 }
-
-                throw new NotImplementedException();
             }
+
+                break;
             case TokenKind.Not:
                 return !IsTruthy(value);
         }
 
-        throw new NotImplementedException();
+        throw new RuntimeError(node.Operator, "Invalid unary expression.");
     }
 
     private bool IsTruthy(object? value)
@@ -141,11 +148,11 @@ public class Interpreter : IExprVisitor<object?>
         return left.Equals(right);
     }
 
-    private void checkNumberOperands(Token op, params object?[] operands)
+    private static void CheckNumberOperands(Token op, params object?[] operands)
     {
         foreach (object? obj in operands)
         {
-            if (!(obj is Double))
+            if (obj is not double)
             {
                 throw new RuntimeError(op, "Operand must be a number.");
             }
