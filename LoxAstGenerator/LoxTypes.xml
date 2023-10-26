@@ -32,5 +32,22 @@
                 </SubType>
             </SubTypes>
         </Group>
+        <Group Base="Stmt">
+            <Usings>
+                <Using>LoxLexer</Using>
+            </Usings>
+            <SubTypes>
+                <SubType Name="Expression">
+                    <Variables>
+                        <Variable Type="Expr" Name="Expression"/>
+                    </Variables>
+                </SubType>
+                <SubType Name="Print">
+                    <Variables>
+                        <Variable Type="Expr" Name="Expression"/>
+                    </Variables>
+                </SubType>
+            </SubTypes>
+        </Group>
     </Groups>
 </ASTDefn>
