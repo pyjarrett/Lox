@@ -21,9 +21,9 @@ public class Environment
         throw new RuntimeError(name, $"Unknown variable: '{identifier}'");
     }
 
-    public void Define(Token name, object? value)
+    public void Define(string name, object? value)
     {
-        values[name.Lexeme] = value;
+        values[name] = value;
     }
 
     public void Assign(Token name, object? value)

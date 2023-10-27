@@ -154,7 +154,12 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 
     public Unit VisitVariableDeclarationStmt(VariableDeclarationStmt node)
     {
-        environment.Define(node.Name, node.Initializer);
+        object? value = null;
+        if (node.Initializer != null)
+        {
+            value = Evaluate(node.Initializer);
+        }
+        environment.Define(node.Name.Lexeme, value);
         return new();
     }
 
