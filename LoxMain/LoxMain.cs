@@ -31,10 +31,16 @@ public static class LoxMain
     /// Interprets the given text.
     private static void Run(string text)
     {
-        Lexer lexer = new Lexer(text);
-        Parser parser = new Parser(lexer.ScanTokens());
-        var expr = parser.Expression();
-        interpreter.Interpret(expr);
+        try
+        {
+            Lexer lexer = new Lexer(text);
+            Parser parser = new Parser(lexer.ScanTokens());
+            interpreter.Interpret(parser.parse());
+        }
+        catch (ParseError parseError)
+        {
+            Console.Error.WriteLine($"Error parsing text: {parseError}");
+        }
     }
 
     /// Runs the contents of a file as script.
