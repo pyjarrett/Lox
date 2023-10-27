@@ -23,13 +23,16 @@ public class RuntimeError : Exception
 
 public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 {
-    public void Interpret(List<IStmt> stmts)
+    public void Interpret(List<IStmt?> stmts)
     {
         try
         {
-            foreach (IStmt stmt in stmts)
+            foreach (IStmt? stmt in stmts)
             {
-                Execute(stmt);
+                if (stmt != null)
+                {
+                    Execute(stmt);
+                }
             }
         }
         catch (RuntimeError runtimeError)
