@@ -19,7 +19,7 @@ public class RuntimeError : Exception
 
 public class Interpreter : IExprVisitor<object?>
 {
-    public void Interpret(Expr expr)
+    public void Interpret(IExpr expr)
     {
         try
         {
@@ -32,7 +32,7 @@ public class Interpreter : IExprVisitor<object?>
         }
     }
 
-    public object? Evaluate(Expr expr)
+    public object? Evaluate(IExpr expr)
     {
         return expr.Accept(this);
     }

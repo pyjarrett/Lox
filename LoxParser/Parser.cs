@@ -37,12 +37,12 @@ public class Parser
 
     public List<Token> Tokens { get; init; }
 
-    public Expr Expression()
+    public IExpr Expression()
     {
         return Equality();
     }
 
-    public Expr Equality()
+    public IExpr Equality()
     {
         var expr = Comparison();
         while (Match(TokenKind.EqualEqual, TokenKind.NotEqual))
@@ -60,7 +60,7 @@ public class Parser
     /// </summary>
     /// A left-associative binding.
     /// `comparison := term (( ">" | ">=" | "<=" | "<" )term)*`
-    public Expr Comparison()
+    public IExpr Comparison()
     {
         var expr = Term();
         while (Match(TokenKind.GreaterThan, TokenKind.GreaterThanOrEqual, TokenKind.LessThan,
@@ -78,7 +78,7 @@ public class Parser
     /// 
     /// </summary>
     /// `term := factor (("+" | "-") factor)*
-    public Expr Term()
+    public IExpr Term()
     {
         var expr = Factor();
         while (Match(TokenKind.Plus, TokenKind.Minus))
@@ -95,10 +95,10 @@ public class Parser
     /// Multiplication is below addition in precedence and has left
     /// associativity.
     /// </summary>
-    public Expr Factor()
+    public IExpr Factor()
     {
         // Descend into next lower rule to prevent infinite recursion.
-        Expr expr = Unary();
+        IExpr expr = Unary();
         while (Match(TokenKind.Star, TokenKind.Slash))
         {
             var op = Previous();
@@ -114,19 +114,19 @@ public class Parser
     /// </summary>
     ///
     /// Of the form `(! | + | -)unary | primary`
-    public Expr Unary()
+    public IExpr Unary()
     {
         if (Match(TokenKind.Plus, TokenKind.Minus, TokenKind.Not))
         {
             Token op = Previous();
-            Expr expr = Unary();
+            IExpr expr = Unary();
             return new LoxAst.UnaryExpr(op, expr);
         }
 
         return Primary();
     }
 
-    public Expr Primary()
+    public IExpr Primary()
     {
         if (Match(TokenKind.False))
         {
@@ -151,7 +151,7 @@ public class Parser
         // Parenthesized expression
         if (Match(TokenKind.LeftParen))
         {
-            Expr expr = Expression();
+            IExpr expr = Expression();
             Consume(TokenKind.RightParen, "Expected ')' after expression");
             return new LoxAst.GroupingExpr(expr);
         }

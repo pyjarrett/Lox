@@ -9,14 +9,14 @@
             <SubTypes>
                 <SubType Name="Binary">
                     <Variables>
-                        <Variable Type="Expr" Name="Left"/>
+                        <Variable Type="IExpr" Name="Left"/>
                         <Variable Type="Token" Name="Operator"/>
-                        <Variable Type="Expr" Name="Right"/>
+                        <Variable Type="IExpr" Name="Right"/>
                     </Variables>
                 </SubType>
                 <SubType Name="Grouping">
                     <Variables>
-                        <Variable Type="Expr" Name="Expression"/>
+                        <Variable Type="IExpr" Name="Expression"/>
                     </Variables>
                 </SubType>
                 <SubType Name="Literal">
@@ -27,7 +27,7 @@
                 <SubType Name="Unary">
                     <Variables>
                         <Variable Type="Token" Name="Operator"/>
-                        <Variable Type="Expr" Name="Right"/>
+                        <Variable Type="IExpr" Name="Right"/>
                     </Variables>
                 </SubType>
             </SubTypes>
@@ -39,12 +39,12 @@
             <SubTypes>
                 <SubType Name="Expression">
                     <Variables>
-                        <Variable Type="Expr" Name="Expression"/>
+                        <Variable Type="IExpr" Name="Expression"/>
                     </Variables>
                 </SubType>
                 <SubType Name="Print">
                     <Variables>
-                        <Variable Type="Expr" Name="Expression"/>
+                        <Variable Type="IExpr" Name="Expression"/>
                     </Variables>
                 </SubType>
             </SubTypes>

@@ -108,7 +108,7 @@ public static class LoxASTGenerator
             file.WriteLine("}");
             file.WriteLine();
 
-            file.WriteLine($"public interface {group.Base} {{");
+            file.WriteLine($"public interface I{group.Base} {{");
             file.WriteLine($"    TRetType Accept<TRetType>({visitorName} visitor);");
             file.WriteLine("}");
             file.WriteLine();
@@ -117,7 +117,7 @@ public static class LoxASTGenerator
             {
                 var variables = subType.Variables.Select(variable => $"{variable.Type} {variable.Name}").ToArray();
                 file.WriteLine(
-                    $"public readonly record struct {subType.Name}{group.Base} ({string.Join(", ", variables)}) : {group.Base} {{");
+                    $"public readonly record struct {subType.Name}{group.Base} ({string.Join(", ", variables)}) : I{group.Base} {{");
 
                 file.WriteLine($"    public TRetType Accept<TRetType>({visitorName} visitor) {{");
                 file.WriteLine($"        return visitor.Visit{subType.Name}{group.Base}(this);");

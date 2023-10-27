@@ -58,7 +58,7 @@ public class ParserTests
         Lexer lexer = new Lexer("1 + 2.0 / 3.0 * 4 - --5");
         Parser parser = new Parser(lexer.ScanTokens());
 
-        Expr expr = parser.Expression();
+        IExpr expr = parser.Expression();
         AstVisitor astVisitor = new AstVisitor();
         Assert.Equal("(- (+ 1 (* (/ 2 3) 4)) (- (- 5)))", expr.Accept(astVisitor));
     }
@@ -69,7 +69,7 @@ public class ParserTests
         Lexer lexer = new Lexer("(1 + 2.0) / ((3.0 * 4) - --5)");
         Parser parser = new Parser(lexer.ScanTokens());
 
-        Expr expr = parser.Expression();
+        IExpr expr = parser.Expression();
         AstVisitor astVisitor = new AstVisitor();
         Assert.Equal("(/ (group (+ 1 2)) (group (- (group (* 3 4)) (- (- 5)))))", expr.Accept(astVisitor));
     }
