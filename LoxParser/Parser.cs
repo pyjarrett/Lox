@@ -41,7 +41,7 @@ public class Parser
     /// <summary>
     /// Parses the tokens into statements.
     /// </summary>
-    public List<IStmt> parse()
+    public List<IStmt> Parse()
     {
         List<IStmt> stmts = new();
 
