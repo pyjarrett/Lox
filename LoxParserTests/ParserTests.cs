@@ -22,9 +22,19 @@ public class AstVisitor : IExprVisitor<string>
         return $"{node.Value}";
     }
 
+    public string VisitVariableExpr(VariableExpr node)
+    {
+        return $"VARIABLE: {node.Name.Lexeme}";
+    }
+
     public string VisitUnaryExpr(UnaryExpr node)
     {
         return $"({node.Operator.Lexeme} {node.Right.Accept(this)})";
+    }
+
+    public string VisitAssignmentExpr(AssignmentExpr node)
+    {
+        return $"{node.Name} = {node.Value.Accept(this)}";
     }
 }
 

@@ -6,7 +6,9 @@ public interface IExprVisitor<TRetType> {
     TRetType VisitBinaryExpr(BinaryExpr node);
     TRetType VisitGroupingExpr(GroupingExpr node);
     TRetType VisitLiteralExpr(LiteralExpr node);
+    TRetType VisitVariableExpr(VariableExpr node);
     TRetType VisitUnaryExpr(UnaryExpr node);
+    TRetType VisitAssignmentExpr(AssignmentExpr node);
 }
 
 public interface IExpr {
@@ -28,8 +30,18 @@ public readonly record struct LiteralExpr (object Value) : IExpr {
         return visitor.VisitLiteralExpr(this);
     }
 }
+public readonly record struct VariableExpr (Token Name) : IExpr {
+    public TRetType Accept<TRetType>(IExprVisitor<TRetType> visitor) {
+        return visitor.VisitVariableExpr(this);
+    }
+}
 public readonly record struct UnaryExpr (Token Operator, IExpr Right) : IExpr {
     public TRetType Accept<TRetType>(IExprVisitor<TRetType> visitor) {
         return visitor.VisitUnaryExpr(this);
+    }
+}
+public readonly record struct AssignmentExpr (Token Name, IExpr Value) : IExpr {
+    public TRetType Accept<TRetType>(IExprVisitor<TRetType> visitor) {
+        return visitor.VisitAssignmentExpr(this);
     }
 }

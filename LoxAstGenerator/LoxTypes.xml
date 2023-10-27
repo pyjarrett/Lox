@@ -24,10 +24,21 @@
                         <Variable Type="object" Name="Value"/>
                     </Variables>
                 </SubType>
+                <SubType Name="Variable">
+                    <Variables>
+                        <Variable Type="Token" Name="Name"/>
+                    </Variables>
+                </SubType>
                 <SubType Name="Unary">
                     <Variables>
                         <Variable Type="Token" Name="Operator"/>
                         <Variable Type="IExpr" Name="Right"/>
+                    </Variables>
+                </SubType>
+                <SubType Name="Assignment">
+                    <Variables>
+                        <Variable Type="Token" Name="Name"/>
+                        <Variable Type="IExpr" Name="Value"/>
                     </Variables>
                 </SubType>
             </SubTypes>
@@ -45,6 +56,12 @@
                 <SubType Name="Print">
                     <Variables>
                         <Variable Type="IExpr" Name="Expression"/>
+                    </Variables>
+                </SubType>
+                <SubType Name="VariableDeclaration">
+                    <Variables>
+                        <Variable Type="Token" Name="Name"/>
+                        <Variable Type="IExpr?" Name="Initializer"/>
                     </Variables>
                 </SubType>
             </SubTypes>

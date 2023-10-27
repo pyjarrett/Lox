@@ -93,6 +93,11 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         return node.Value;
     }
 
+    public object? VisitVariableExpr(VariableExpr node)
+    {
+        return environment.Get(node.Name);
+    }
+
     public object? VisitUnaryExpr(UnaryExpr node)
     {
         var value = node.Right.Accept(this);
@@ -123,6 +128,13 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 
         throw new RuntimeError(node.Operator, "Invalid unary expression.");
     }
+    
+    public object? VisitAssignmentExpr(AssignmentExpr node)
+    {
+        object? value = node.Value.Accept(this);
+        environment.Assign(node.Name, value);
+        return value;
+    }
 
     public Unit VisitExpressionStmt(ExpressionStmt node)
     {
@@ -134,6 +146,12 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
     {
         object? value = Evaluate(node.Expression);
         Console.WriteLine($"{value}");
+        return new();
+    }
+
+    public Unit VisitVariableDeclarationStmt(VariableDeclarationStmt node)
+    {
+        environment.Define(node.Name, node.Initializer);
         return new();
     }
 
@@ -182,4 +200,6 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
     {
         stmt.Accept(this);
     }
+
+    private Environment environment = new();
 }

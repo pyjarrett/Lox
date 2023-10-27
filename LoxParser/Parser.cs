@@ -41,16 +41,38 @@ public class Parser
     /// <summary>
     /// Parses the tokens into statements.
     /// </summary>
-    public List<IStmt> Parse()
+    public List<IStmt?> Parse()
     {
-        List<IStmt> stmts = new();
+        List<IStmt?> stmts = new();
 
         while (!IsAtEnd())
         {
-            stmts.Add(Statement());
+            stmts.Add(Declaration());
         }
 
         return stmts;
+    }
+
+    public IStmt? Declaration()
+    {
+        try
+        {
+            if (Match(TokenKind.Var))
+            {
+                return VariableDeclarationStatement();
+            }
+            else
+            {
+                return Statement();
+            }
+        }
+        catch (ParseError parseError)
+        {
+            // An error occurred and the Parser has panicked, so skip to a
+            // known good position in the token stream.
+            Synchronize();
+            return null;
+        }
     }
 
     /// <summary>
@@ -64,21 +86,69 @@ public class Parser
     {
         if (Match(TokenKind.Print))
         {
-            IExpr expr = Expression();
-            Consume(TokenKind.Semicolon, "Expected ';' after print statement.");
-            return new PrintStmt(expr);
+            return PrintStatement();
         }
         else
         {
-            IExpr expr = Expression();
-            Consume(TokenKind.Semicolon, "Expected ';' after expression statement.");
-            return new ExpressionStmt(expr);
+            return ExpressionStatement();
         }
+    }
+
+    private IStmt ExpressionStatement()
+    {
+        IExpr expr = Expression();
+        Consume(TokenKind.Semicolon, "Expected ';' after expression statement.");
+        return new ExpressionStmt(expr);
+    }
+
+    private IStmt VariableDeclarationStatement()
+    {
+        Consume(TokenKind.Identifier, "Expected an identifier.");
+        Token identifier = Previous();
+        IExpr? initializer = null;
+
+        // A variable with an initializer.
+        if (Match(TokenKind.Equal))
+        {
+            initializer = Expression();
+        }
+
+        Consume(TokenKind.Semicolon, "Expected a ';' after a variable declaration.");
+
+        return new VariableDeclarationStmt(identifier, initializer);
+    }
+
+    private IStmt PrintStatement()
+    {
+        IExpr expr = Expression();
+        Consume(TokenKind.Semicolon, "Expected ';' after print statement.");
+        return new PrintStmt(expr);
     }
 
     public IExpr Expression()
     {
-        return Equality();
+        return Assignment();
+    }
+
+    public IExpr Assignment()
+    {
+        // The left side of an assignment, could be a chained expression,
+        // like a.b.c.d.
+        IExpr expr = Equality();
+
+        if (Match(TokenKind.Equal))
+        {
+            Token equals = Previous();
+            IExpr rightHandSide = Assignment();
+            if (expr is VariableExpr varExpr)
+            {
+                return new AssignmentExpr(varExpr.Name, rightHandSide);
+            }
+
+            Error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
     }
 
     public IExpr Equality()
@@ -187,6 +257,11 @@ public class Parser
             return new LoxAst.LiteralExpr(Previous().Literal!);
         }
 
+        if (Match(TokenKind.Identifier))
+        {
+            return new LoxAst.VariableExpr(Previous());
+        }
+
         // Parenthesized expression
         if (Match(TokenKind.LeftParen))
         {
@@ -289,6 +364,46 @@ public class Parser
         }
 
         throw Error(Peek(), message);
+    }
+
+    /// <summary>
+    /// Called when the parser runs into a problem where there's a syntax error,
+    /// and it needs to find a place in the token stream where it can restart
+    /// parsing.
+    /// </summary>
+    ///
+    /// This allows the parser to emit multiple errors, rather than having to
+    /// bail out of parsing after the first error.
+    private void Synchronize()
+    {
+        // Skip the most recently encountered bad thing.
+        Advance();
+
+        while (!IsAtEnd())
+        {
+            // Reached the end of a statement, so start the next statement.
+            if (Previous().Kind == TokenKind.Semicolon)
+            {
+                return;
+            }
+
+            // If the next token is something that is recognizable as a
+            // statement or a declaration, then try to start parsing there.
+            switch (Peek().Kind)
+            {
+                case TokenKind.Class: return;
+                case TokenKind.Fun: return;
+                case TokenKind.Print: return;
+                case TokenKind.Return: return;
+                case TokenKind.Var: return;
+                case TokenKind.For: return;
+                case TokenKind.If: return;
+                case TokenKind.While: return;
+            }
+
+            // Move along and try again.
+            Advance();
+        }
     }
 
     private int current = 0;
