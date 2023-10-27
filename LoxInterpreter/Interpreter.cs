@@ -1,7 +1,11 @@
-﻿using LoxAst;
+﻿using System.Runtime.CompilerServices;
+using LoxAst;
 using LoxLexer;
 
 namespace LoxInterpreter;
+
+/// There's no Void or Unit type to be used in generics for C#, so provide on.
+public record Unit;
 
 /// <summary>
 /// Errors reporting when executing the AST.
@@ -17,14 +21,16 @@ public class RuntimeError : Exception
     }
 }
 
-public class Interpreter : IExprVisitor<object?>
+public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 {
-    public void Interpret(IExpr expr)
+    public void Interpret(List<IStmt> stmts)
     {
         try
         {
-            var value = expr.Accept(this);
-            Console.WriteLine(value);
+            foreach (IStmt stmt in stmts)
+            {
+                Execute(stmt);
+            }
         }
         catch (RuntimeError runtimeError)
         {
@@ -118,6 +124,19 @@ public class Interpreter : IExprVisitor<object?>
         throw new RuntimeError(node.Operator, "Invalid unary expression.");
     }
 
+    public Unit VisitExpressionStmt(ExpressionStmt node)
+    {
+        Evaluate(node.Expression);
+        return new();
+    }
+
+    public Unit VisitPrintStmt(PrintStmt node)
+    {
+        object? value = Evaluate(node.Expression);
+        Console.WriteLine($"{value}");
+        return new();
+    }
+
     private bool IsTruthy(object? value)
     {
         if (value == null)
@@ -157,5 +176,10 @@ public class Interpreter : IExprVisitor<object?>
                 throw new RuntimeError(op, "Operand must be a number.");
             }
         }
+    }
+
+    private void Execute(IStmt stmt)
+    {
+        stmt.Accept(this);
     }
 }

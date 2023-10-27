@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Data;
+using System.Diagnostics;
 using LoxLexer;
 using LoxAst;
 
@@ -36,6 +37,44 @@ public class Parser
     }
 
     public List<Token> Tokens { get; init; }
+
+    /// <summary>
+    /// Parses the tokens into statements.
+    /// </summary>
+    public List<IStmt> parse()
+    {
+        List<IStmt> stmts = new();
+
+        while (!IsAtEnd())
+        {
+            stmts.Add(Statement());
+        }
+
+        return stmts;
+    }
+
+    /// <summary>
+    /// Parses the next statement.
+    /// </summary>
+    ///
+    /// Statement types:
+    /// * `print $expression;`
+    /// * `$expression`;
+    public IStmt? Statement()
+    {
+        if (Match(TokenKind.Print))
+        {
+            IExpr expr = Expression();
+            Consume(TokenKind.Semicolon, "Expected ';' after print statement.");
+            return new PrintStmt(expr);
+        }
+        else
+        {
+            IExpr expr = Expression();
+            Consume(TokenKind.Semicolon, "Expected ';' after expression statement.");
+            return new ExpressionStmt(expr);
+        }
+    }
 
     public IExpr Expression()
     {
