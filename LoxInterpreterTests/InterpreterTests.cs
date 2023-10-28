@@ -14,6 +14,24 @@ public class InterpreterTests
     }
 
     [Fact]
+    public void TestLogicalOperators()
+    {
+        // Boolean versions
+        VerifyEvaluation(true, "true or false");
+        VerifyEvaluation(true, "false or true");
+        VerifyEvaluation(false, "false or false");
+        VerifyEvaluation(false, "true and false");
+        VerifyEvaluation(true, "true and true");
+        
+        // Object return versions (like Ruby's ||)
+        VerifyEvaluation(20.0, "nil or 20.0");
+        VerifyEvaluation(10.0, "10.0 or 20.0");
+        
+        VerifyEvaluation(null, "nil and 20.0");
+        VerifyEvaluation(20.0, "10.0 and 20.0");
+    }
+
+    [Fact]
     public void TestComparisonOperators()
     {
         VerifyEvaluation(true, "1 != 2");

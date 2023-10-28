@@ -12,6 +12,11 @@ public class AstVisitor : IExprVisitor<string>
         return $"({node.Operator.Lexeme} {node.Left.Accept(this)} {node.Right.Accept(this)})";
     }
 
+    public string VisitLogicalExpr(LogicalExpr node)
+    {
+        return $"({node.Operator.Lexeme} {node.Left.Accept(this)} {node.Right.Accept(this)}";
+    }
+
     public string VisitGroupingExpr(GroupingExpr node)
     {
         return $"(group {node.Expression.Accept(this)})";
