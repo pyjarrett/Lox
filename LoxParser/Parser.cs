@@ -111,6 +111,15 @@ public class Parser
             return new IfStmt(condition, thenBranch!, elseBranch);
         }
 
+        if (Match(TokenKind.While))
+        {
+            Consume(TokenKind.LeftParen, "Expected '(' before condition.");
+            IExpr expression = Expression();
+            Consume(TokenKind.RightParen, "Expected ')' after condition.");
+            IStmt statement = Statement()!;
+            return new WhileStmt(expression, statement);
+        }
+
         return ExpressionStatement();
     }
 

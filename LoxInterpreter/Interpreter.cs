@@ -244,6 +244,16 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         return new();
     }
 
+    public Unit VisitWhileStmt(WhileStmt node)
+    {
+        while (IsTruthy(Evaluate(node.Condition)))
+        {
+            Execute(node.Body);
+        }
+
+        return new();
+    }
+
     private bool IsTruthy(object? value)
     {
         if (value == null)

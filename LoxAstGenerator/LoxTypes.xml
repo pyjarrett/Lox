@@ -83,6 +83,12 @@
                         <Variable Type="IStmt?" Name="ElseBranch"/>
                     </Variables>
                 </SubType>
+                <SubType Name="While">
+                    <Variables>
+                        <Variable Type="IExpr" Name="Condition"/>
+                        <Variable Type="IStmt" Name="Body"/>
+                    </Variables>
+                </SubType>
             </SubTypes>
         </Group>
     </Groups>
