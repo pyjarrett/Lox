@@ -3,6 +3,12 @@
 namespace LoxInterpreter;
 
 /// <summary>
+/// Value stored when a variable is uninitialized.  This helps differentiate
+/// a failure to initialize from an initialized `nil.`
+/// </summary>
+public readonly record struct UninitializedValue;
+
+/// <summary>
 /// A container for variables and their values.
 /// </summary>
 public class Environment
@@ -36,6 +42,10 @@ public class Environment
         return enclosing.Get(name);
     }
 
+    /// <summary>
+    /// Define and potentially redefine a variable with a given name, giving
+    /// it the specified value.
+    /// </summary>
     public void Define(string name, object? value)
     {
         values[name] = value;
@@ -58,6 +68,9 @@ public class Environment
         }
     }
 
+    /// <summary>
+    /// The parent scope of this environment.
+    /// </summary>
     private Environment? enclosing = null;
     private Dictionary<string, object?> values = new();
 }

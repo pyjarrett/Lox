@@ -36,7 +36,12 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         }
         catch (RuntimeError runtimeError)
         {
-            Console.Error.WriteLine($"Runtime Error at {runtimeError.Source}: {runtimeError.Message}");
+            Console.Error.WriteLine(
+                $"Runtime Error at {runtimeError.Location.LineNumber} '{runtimeError.Location.Lexeme}': {runtimeError.Message}");
+            if (runtimeError.StackTrace != null)
+            {
+                Console.Error.WriteLine(runtimeError.StackTrace);
+            }
         }
     }
 
@@ -97,7 +102,13 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 
     public object? VisitVariableExpr(VariableExpr node)
     {
-        return environment.Get(node.Name);
+        var value = environment.Get(node.Name);
+        if (value is UninitializedValue)
+        {
+            throw new RuntimeError(node.Name, "Accessing uninitialized value.");
+        }
+
+        return value;
     }
 
     public object? VisitUnaryExpr(UnaryExpr node)
@@ -153,7 +164,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 
     public Unit VisitVariableDeclarationStmt(VariableDeclarationStmt node)
     {
-        object? value = null;
+        object? value = new UninitializedValue();
         if (node.Initializer != null)
         {
             value = Evaluate(node.Initializer);
