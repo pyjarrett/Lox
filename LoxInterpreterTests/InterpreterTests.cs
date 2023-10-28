@@ -1,7 +1,6 @@
 using LoxLexer;
 using LoxInterpreter;
 using LoxParser;
-using NuGet.Frameworks;
 
 namespace LoxInterpreterTests;
 

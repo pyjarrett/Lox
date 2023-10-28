@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using LoxAst;
+﻿using LoxAst;
 using LoxLexer;
 
 namespace LoxInterpreter;
