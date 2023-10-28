@@ -8,6 +8,16 @@ namespace LoxInterpreter;
 public class Environment
 {
     /// <summary>
+    /// An environment, with an optional environment in which it exists in.
+    /// This parent environment could be the global scope, or the next higher
+    /// block.
+    /// </summary>
+    public Environment(Environment? parent = null)
+    {
+        enclosing = parent;
+    }
+
+    /// <summary>
     /// Look up a variable, throwing a RuntimeError if it can't find it.
     /// </summary>
     public object Get(Token name)
@@ -18,7 +28,12 @@ public class Environment
             return values[identifier];
         }
 
-        throw new RuntimeError(name, $"Unknown variable: '{identifier}'");
+        if (enclosing == null)
+        {
+            throw new RuntimeError(name, $"Unknown variable: '{identifier}'");
+        }
+
+        return enclosing.Get(name);
     }
 
     public void Define(string name, object? value)
@@ -33,12 +48,16 @@ public class Environment
         {
             values[identifier] = value;
         }
-        else
+        else if (enclosing == null)
         {
             throw new RuntimeError(name, $"Undefined identifier: '{name.Lexeme}'");
         }
-        
+        else
+        {
+            enclosing.Assign(name, value);
+        }
     }
-    
+
+    private Environment? enclosing = null;
     private Dictionary<string, object?> values = new();
 }
