@@ -97,30 +97,40 @@ public class Parser
 
         if (Match(TokenKind.If))
         {
-            Consume(TokenKind.LeftParen, "Expected '(' before condition.");
-            IExpr? condition = Expression();
-            Consume(TokenKind.RightParen, "Expected ')' after condition.");
-
-            IStmt? thenBranch = Statement();
-            IStmt? elseBranch = null;
-            if (Match(TokenKind.Else))
-            {
-                elseBranch = Statement();
-            }
-
-            return new IfStmt(condition, thenBranch!, elseBranch);
+            return IfStatement();
         }
 
         if (Match(TokenKind.While))
         {
-            Consume(TokenKind.LeftParen, "Expected '(' before condition.");
-            IExpr expression = Expression();
-            Consume(TokenKind.RightParen, "Expected ')' after condition.");
-            IStmt statement = Statement()!;
-            return new WhileStmt(expression, statement);
+            return WhileStatement();
         }
 
         return ExpressionStatement();
+    }
+
+    private IStmt? IfStatement()
+    {
+        Consume(TokenKind.LeftParen, "Expected '(' before condition.");
+        IExpr? condition = Expression();
+        Consume(TokenKind.RightParen, "Expected ')' after condition.");
+
+        IStmt? thenBranch = Statement();
+        IStmt? elseBranch = null;
+        if (Match(TokenKind.Else))
+        {
+            elseBranch = Statement();
+        }
+
+        return new IfStmt(condition, thenBranch!, elseBranch);
+    }
+
+    private IStmt? WhileStatement()
+    {
+        Consume(TokenKind.LeftParen, "Expected '(' before condition.");
+        IExpr expression = Expression();
+        Consume(TokenKind.RightParen, "Expected ')' after condition.");
+        IStmt statement = Statement()!;
+        return new WhileStmt(expression, statement);
     }
 
     /// <summary>
