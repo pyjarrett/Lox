@@ -96,6 +96,22 @@ public class Parser
             return new BlockStmt(Block());
         }
 
+        if (Match(TokenKind.If))
+        {
+            Consume(TokenKind.LeftParen, "Expected '(' before condition.");
+            IExpr? condition = Expression();
+            Consume(TokenKind.RightParen, "Expected ')' after condition.");
+
+            IStmt? thenBranch = Statement();
+            IStmt? elseBranch = null;
+            if (Match(TokenKind.Else))
+            {
+                elseBranch = Statement();
+            }
+
+            return new IfStmt(condition, thenBranch!, elseBranch);
+        }
+
         return ExpressionStatement();
     }
 

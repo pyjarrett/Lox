@@ -176,6 +176,12 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 
     public Unit VisitBlockStmt(BlockStmt node)
     {
+        ExecuteBlock(node.Block);
+        return new();
+    }
+
+    public void ExecuteBlock(List<IStmt?> stmts)
+    {
         Environment previous = environment;
 
         try
@@ -184,11 +190,11 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
             Environment local = new(environment);
             environment = local;
 
-            foreach (IStmt? stmt in node.Block)
+            foreach (IStmt? stmt in stmts)
             {
                 if (stmt != null)
                 {
-                    stmt.Accept(this);
+                    Execute(stmt);
                 }
             }
         }
@@ -198,6 +204,18 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
             // Do this inside a `finally` block to always do this, even if
             // there was a runtime error.
             environment = previous;
+        }
+    }
+
+    public Unit VisitIfStmt(IfStmt node)
+    {
+        if (IsTruthy(Evaluate(node.Condition)))
+        {
+            Execute(node.ThenBranch);
+        }
+        else if (node.ElseBranch != null)
+        {
+            Execute(node.ElseBranch);
         }
 
         return new();

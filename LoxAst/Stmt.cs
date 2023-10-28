@@ -7,6 +7,7 @@ public interface IStmtVisitor<TRetType> {
     TRetType VisitPrintStmt(PrintStmt node);
     TRetType VisitVariableDeclarationStmt(VariableDeclarationStmt node);
     TRetType VisitBlockStmt(BlockStmt node);
+    TRetType VisitIfStmt(IfStmt node);
 }
 
 public interface IStmt {
@@ -31,5 +32,10 @@ public readonly record struct VariableDeclarationStmt (Token Name, IExpr? Initia
 public readonly record struct BlockStmt (List<IStmt?> Block) : IStmt {
     public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitBlockStmt(this);
+    }
+}
+public readonly record struct IfStmt (IExpr Condition, IStmt ThenBranch, IStmt? ElseBranch) : IStmt {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
+        return visitor.VisitIfStmt(this);
     }
 }

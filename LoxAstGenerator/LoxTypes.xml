@@ -69,6 +69,13 @@
                         <Variable Type="List&lt;IStmt?&gt;" Name="Block"/>
                     </Variables>
                 </SubType>
+                <SubType Name="If">
+                    <Variables>
+                        <Variable Type="IExpr" Name="Condition"/>
+                        <Variable Type="IStmt" Name="ThenBranch"/>
+                        <Variable Type="IStmt?" Name="ElseBranch"/>
+                    </Variables>
+                </SubType>
             </SubTypes>
         </Group>
     </Groups>
