@@ -1,4 +1,5 @@
-﻿using LoxAst;
+﻿using System.Text;
+using LoxAst;
 using LoxLexer;
 
 namespace LoxInterpreter;
@@ -20,8 +21,51 @@ public class RuntimeError : Exception
     }
 }
 
+public interface IInterpreterOutput
+{
+    void Output(string message);
+    void Error(string message);
+}
+
+public class ConsoleOutput : IInterpreterOutput
+{
+    public void Output(string message)
+    {
+        Console.WriteLine(message);
+    }
+
+    public void Error(string message)
+    {
+        Console.Error.WriteLine(message);
+    }
+}
+
+public class StringBufferOutput : IInterpreterOutput
+{
+    public void Output(string message)
+    {
+        outputLog.AppendLine(message);
+    }
+
+    public void Error(string message)
+    {
+        errorLog.AppendLine(message);
+    }
+
+    public string OutputLog => outputLog.ToString();
+    public string ErrorLog => errorLog.ToString();
+
+    private StringBuilder outputLog = new();
+    private StringBuilder errorLog = new();
+}
+
 public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 {
+    public Interpreter(IInterpreterOutput? targetOutput = null)
+    {
+        output = targetOutput ?? new ConsoleOutput();
+    }
+
     public void Interpret(List<IStmt?> stmts)
     {
         try
@@ -36,11 +80,11 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         }
         catch (RuntimeError runtimeError)
         {
-            Console.Error.WriteLine(
+            output.Error(
                 $"Runtime Error at {runtimeError.Location.LineNumber} '{runtimeError.Location.Lexeme}': {runtimeError.Message}");
             if (runtimeError.StackTrace != null)
             {
-                Console.Error.WriteLine(runtimeError.StackTrace);
+                output.Error(runtimeError.StackTrace);
             }
         }
     }
@@ -181,7 +225,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
     public Unit VisitPrintStmt(PrintStmt node)
     {
         object? value = Evaluate(node.Expression);
-        Console.WriteLine($"{value}");
+        output.Output($"{value}");
         return new();
     }
 
@@ -301,4 +345,5 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
     }
 
     private Environment environment = new();
+    private IInterpreterOutput output;
 }

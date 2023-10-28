@@ -22,11 +22,11 @@ public class InterpreterTests
         VerifyEvaluation(false, "false or false");
         VerifyEvaluation(false, "true and false");
         VerifyEvaluation(true, "true and true");
-        
+
         // Object return versions (like Ruby's ||)
         VerifyEvaluation(20.0, "nil or 20.0");
         VerifyEvaluation(10.0, "10.0 or 20.0");
-        
+
         VerifyEvaluation(null, "nil and 20.0");
         VerifyEvaluation(20.0, "10.0 and 20.0");
     }
@@ -83,6 +83,36 @@ public class InterpreterTests
         VerifyThrows(typeof(ParseError), "(5.0");
     }
 
+    [Fact]
+    public void TestScopes()
+    {
+        VerifyOutput(@"20
+10
+",
+            @"var a = 10;
+{
+    var a = 20.0;
+    print a;
+}
+print a;
+");
+    }
+
+    [Fact]
+    public void TestWhileLoop()
+    {
+        VerifyOutput(@"1
+3
+5
+",
+            @"var a = 1;
+while (a <= 5) {
+    print a;
+    a = a + 2;
+}
+");
+    }
+
     private void VerifyThrows(Type exception, string text)
     {
         Lexer lexer = new Lexer(text);
@@ -97,5 +127,17 @@ public class InterpreterTests
         Parser parser = new Parser(lexer.ScanTokens());
         Interpreter interpreter = new Interpreter();
         Assert.Equal(expected, interpreter.Evaluate(parser.Expression()));
+    }
+
+    private void VerifyOutput(string expected, string input)
+    {
+        StringBufferOutput testLog = new StringBufferOutput();
+        Lexer lexer = new Lexer(input);
+        Parser parser = new Parser(lexer.ScanTokens());
+        Interpreter interpreter = new Interpreter(testLog);
+        interpreter.Interpret(parser.Parse());
+        Console.WriteLine(testLog.OutputLog);
+        Console.WriteLine(testLog.ErrorLog);
+        Assert.Equal(expected, testLog.OutputLog);
     }
 }
