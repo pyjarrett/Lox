@@ -136,8 +136,6 @@ while (a <= 5) {
         Parser parser = new Parser(lexer.ScanTokens());
         Interpreter interpreter = new Interpreter(testLog);
         interpreter.Interpret(parser.Parse());
-        Console.WriteLine(testLog.OutputLog);
-        Console.WriteLine(testLog.ErrorLog);
         Assert.Equal(expected, testLog.OutputLog);
     }
 }
