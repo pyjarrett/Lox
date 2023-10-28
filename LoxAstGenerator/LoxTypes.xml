@@ -64,6 +64,11 @@
                         <Variable Type="IExpr?" Name="Initializer"/>
                     </Variables>
                 </SubType>
+                <SubType Name="Block">
+                    <Variables>
+                        <Variable Type="List&lt;IStmt?&gt;" Name="Block"/>
+                    </Variables>
+                </SubType>
             </SubTypes>
         </Group>
     </Groups>

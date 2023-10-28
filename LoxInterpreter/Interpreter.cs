@@ -11,12 +11,12 @@ public record Unit;
 /// </summary>
 public class RuntimeError : Exception
 {
-    public Token Source { get; }
+    public Token Location { get; }
 
     public RuntimeError(Token token, string message)
         : base(message)
     {
-        Source = token;
+        Location = token;
     }
 }
 
@@ -130,7 +130,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 
         throw new RuntimeError(node.Operator, "Invalid unary expression.");
     }
-    
+
     public object? VisitAssignmentExpr(AssignmentExpr node)
     {
         object? value = node.Value.Accept(this);
@@ -158,7 +158,37 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         {
             value = Evaluate(node.Initializer);
         }
+
         environment.Define(node.Name.Lexeme, value);
+        return new();
+    }
+
+    public Unit VisitBlockStmt(BlockStmt node)
+    {
+        Environment previous = environment;
+
+        try
+        {
+            // Push a new local scope.
+            Environment local = new(environment);
+            environment = local;
+
+            foreach (IStmt? stmt in node.Block)
+            {
+                if (stmt != null)
+                {
+                    stmt.Accept(this);
+                }
+            }
+        }
+        finally
+        {
+            // Pop the local scope as the block is exited.
+            // Do this inside a `finally` block to always do this, even if
+            // there was a runtime error.
+            environment = previous;
+        }
+
         return new();
     }
 

@@ -68,6 +68,8 @@ public class Parser
         }
         catch (ParseError parseError)
         {
+            Console.Error.WriteLine($"Parse error: {parseError}");
+            
             // An error occurred and the Parser has panicked, so skip to a
             // known good position in the token stream.
             Synchronize();
@@ -88,10 +90,28 @@ public class Parser
         {
             return PrintStatement();
         }
-        else
+
+        if (Match(TokenKind.LeftBrace))
         {
-            return ExpressionStatement();
+            return new BlockStmt(Block());
         }
+
+        return ExpressionStatement();
+    }
+
+    /// <summary>
+    /// Produce a list of statements in a block.  Doesn't produce a block type
+    /// directly so this can be reused for function bodies and class definitions.
+    /// </summary>
+    private List<IStmt?> Block()
+    {
+        List<IStmt?> statements = new();
+        while (!IsAtEnd() && !Check(TokenKind.RightBrace))
+        {
+            statements.Add(Declaration());
+        }
+        Consume(TokenKind.RightBrace, "Expected '}' after a block.");
+        return statements;
     }
 
     private IStmt ExpressionStatement()
