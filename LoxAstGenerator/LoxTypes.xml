@@ -41,6 +41,13 @@
                         <Variable Type="IExpr" Name="Value"/>
                     </Variables>
                 </SubType>
+                <SubType Name="Logical">
+                    <Variables>
+                        <Variable Type="IExpr" Name="Left"/>
+                        <Variable Type="Token" Name="Operator"/>
+                        <Variable Type="IExpr" Name="Right"/>
+                    </Variables>
+                </SubType>
             </SubTypes>
         </Group>
         <Group Base="Stmt">

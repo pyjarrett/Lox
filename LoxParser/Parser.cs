@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using LoxLexer;
 using LoxAst;
 
@@ -69,7 +68,7 @@ public class Parser
         catch (ParseError parseError)
         {
             Console.Error.WriteLine($"Parse error: {parseError}");
-            
+
             // An error occurred and the Parser has panicked, so skip to a
             // known good position in the token stream.
             Synchronize();
@@ -126,6 +125,7 @@ public class Parser
         {
             statements.Add(Declaration());
         }
+
         Consume(TokenKind.RightBrace, "Expected '}' after a block.");
         return statements;
     }
@@ -166,11 +166,15 @@ public class Parser
         return Assignment();
     }
 
+    /// ```
+    /// assignment := IDENTIFIER "=" assignment
+    ///     | logic_or;
+    /// ```
     public IExpr Assignment()
     {
         // The left side of an assignment, could be a chained expression,
         // like a.b.c.d.
-        IExpr expr = Equality();
+        IExpr expr = Or();
 
         if (Match(TokenKind.Equal))
         {
@@ -185,6 +189,36 @@ public class Parser
         }
 
         return expr;
+    }
+
+    /// ```
+    /// logic_or := logic_and ("or" logic_and)* ;
+    /// logic_and := equality ("and" equality)* ;
+    /// ```
+    public IExpr Or()
+    {
+        IExpr left = And();
+        while (Match(TokenKind.Or))
+        {
+            Token op = Previous();
+            IExpr right = And();
+            left = new LogicalExpr(left, op, right);
+        }
+
+        return left;
+    }
+
+    public IExpr And()
+    {
+        IExpr left = Equality();
+        if (Match(TokenKind.And))
+        {
+            Token op = Previous();
+            IExpr right = Equality();
+            left = new LogicalExpr(left, op, right);
+        }
+
+        return left;
     }
 
     public IExpr Equality()

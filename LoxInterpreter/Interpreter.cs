@@ -90,6 +90,29 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         throw new NotImplementedException();
     }
 
+    public object? VisitLogicalExpr(LogicalExpr node)
+    {
+        object? left = Evaluate(node.Left);
+        if (node.Operator.Kind == TokenKind.Or)
+        {
+            if (!IsTruthy(left))
+            {
+                return Evaluate(node.Right);
+            }
+        }
+        else if (node.Operator.Kind == TokenKind.And)
+        {
+            // This looks weird to return the right value or an `and`...
+            if (IsTruthy(left))
+            {
+                return Evaluate(node.Right);
+            }
+        }
+
+        // Left of `OR`
+        return left;
+    }
+
     public object? VisitGroupingExpr(GroupingExpr node)
     {
         return node.Expression.Accept(this);
