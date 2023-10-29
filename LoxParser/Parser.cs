@@ -105,6 +105,11 @@ public class Parser
             return WhileStatement();
         }
 
+        if (Match(TokenKind.For))
+        {
+            return ForStatement();
+        }
+
         return ExpressionStatement();
     }
 
@@ -131,6 +136,75 @@ public class Parser
         Consume(TokenKind.RightParen, "Expected ')' after condition.");
         IStmt statement = Statement()!;
         return new WhileStmt(expression, statement);
+    }
+
+    /// <summary>
+    /// For statement syntactic sugar conversion into `while` loop.
+    /// </summary>
+    ///
+    /// `for (initializer; condition; step) { ... }`
+    /// 
+    private IStmt? ForStatement()
+    {
+        Consume(TokenKind.LeftParen, "Expected '(' before initializer.");
+
+        IStmt? initializer = null;
+        IExpr? condition = null;
+        IExpr? update = null;
+
+        // Initializer
+        if (Match(TokenKind.Semicolon))
+        {
+            initializer = null;
+        }
+        else if (Match(TokenKind.Var))
+        {
+            initializer = VariableDeclarationStatement();
+        }
+        else
+        {
+            initializer = ExpressionStatement();
+        }
+
+        // Condition
+        if (!Check(TokenKind.Semicolon))
+        {
+            condition = Expression();
+        }
+        else
+        {
+            // No condition, so assume an infinite loop.
+            condition = new LiteralExpr(true);
+        }
+
+        Consume(TokenKind.Semicolon, "Expected ';' after condition.");
+
+        // Update (step)
+        if (!Check(TokenKind.RightParen))
+        {
+            update = Expression();
+        }
+
+        Consume(TokenKind.RightParen, "Expected ')' after loop parameters.");
+        IStmt? body = Statement();
+
+        // Convert the parts of the `for` loop into a `while` loop.
+
+        // initializer
+        // loop
+        //      body
+        //      update
+
+        // Wrap together the body and increment for the `while` loop.
+        if (update != null)
+        {
+            body = new BlockStmt(new List<IStmt?>() { body, new ExpressionStmt(update) });
+        }
+
+        // Wrap the initializer with the sugared loop body.
+        body = new BlockStmt(new List<IStmt?>() { initializer, new WhileStmt(condition, body!) });
+
+        return body;
     }
 
     /// <summary>

@@ -113,6 +113,20 @@ while (a <= 5) {
 ");
     }
 
+    [Fact]
+    public void TestForLoop()
+    {
+        VerifyOutput(@"1
+3
+5
+",
+            @"
+for (var a = 1; a <= 5; a = a + 2) {
+    print a;
+}
+");
+    }
+
     private void VerifyThrows(Type exception, string text)
     {
         Lexer lexer = new Lexer(text);
