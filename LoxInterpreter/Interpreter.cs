@@ -82,7 +82,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
     public Interpreter(IInterpreterOutput? targetOutput = null)
     {
         output = targetOutput ?? new ConsoleOutput();
-        
+
         globals.Define("clock", new ClockNativeCallable());
 
         environment = globals;
@@ -289,21 +289,26 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         return new();
     }
 
-    public Unit VisitBlockStmt(BlockStmt node)
+    public Unit VisitFunctionStmt(FunctionStmt node)
     {
-        ExecuteBlock(node.Block);
+        LoxFunction fn = new LoxFunction(node);
+        environment.Define(node.Name.Lexeme, fn);
         return new();
     }
 
-    public void ExecuteBlock(List<IStmt?> stmts)
+    public Unit VisitBlockStmt(BlockStmt node)
+    {
+        ExecuteBlock(node.Block, new Environment(environment));
+        return new();
+    }
+
+    public void ExecuteBlock(List<IStmt?> stmts, Environment scope)
     {
         Environment previous = environment;
 
         try
         {
-            // Push a new local scope.
-            Environment local = new(environment);
-            environment = local;
+            environment = scope;
 
             foreach (IStmt? stmt in stmts)
             {
@@ -392,7 +397,8 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         stmt.Accept(this);
     }
 
-    private readonly Environment globals = new();
+    public readonly Environment globals = new();
+
     private Environment environment;
     private IInterpreterOutput output;
 }

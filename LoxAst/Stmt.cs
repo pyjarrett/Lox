@@ -9,6 +9,7 @@ public interface IStmtVisitor<TRetType> {
     TRetType VisitBlockStmt(BlockStmt node);
     TRetType VisitIfStmt(IfStmt node);
     TRetType VisitWhileStmt(WhileStmt node);
+    TRetType VisitFunctionStmt(FunctionStmt node);
 }
 
 public interface IStmt {
@@ -43,5 +44,10 @@ public readonly record struct IfStmt (IExpr Condition, IStmt ThenBranch, IStmt? 
 public readonly record struct WhileStmt (IExpr Condition, IStmt Body) : IStmt {
     public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitWhileStmt(this);
+    }
+}
+public readonly record struct FunctionStmt (Token Name, List<Token> Params, List<IStmt?> Body) : IStmt {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
+        return visitor.VisitFunctionStmt(this);
     }
 }

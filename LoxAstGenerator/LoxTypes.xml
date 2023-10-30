@@ -96,6 +96,13 @@
                         <Variable Type="IStmt" Name="Body"/>
                     </Variables>
                 </SubType>
+                <SubType Name="Function">
+                    <Variables>
+                        <Variable Type="Token" Name="Name"/>
+                        <Variable Type="List&lt;Token&gt;" Name="Params"/>
+                        <Variable Type="List&lt;IStmt?&gt;" Name="Body"/>
+                    </Variables>
+                </SubType>
             </SubTypes>
         </Group>
     </Groups>

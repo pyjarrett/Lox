@@ -60,10 +60,13 @@ public class Parser
             {
                 return VariableDeclarationStatement();
             }
-            else
+
+            if (Match(TokenKind.Fun))
             {
-                return Statement();
+                return FunctionDeclarationStatement("function");
             }
+
+            return Statement();
         }
         catch (ParseError parseError)
         {
@@ -245,6 +248,37 @@ public class Parser
         Consume(TokenKind.Semicolon, "Expected a ';' after a variable declaration.");
 
         return new VariableDeclarationStmt(identifier, initializer);
+    }
+
+    /// <summary>
+    /// Parses a function declaration, reporting errors using the given 'kind'
+    /// of expected function.
+    /// </summary>
+    private IStmt FunctionDeclarationStatement(string kind)
+    {
+        Token name = Consume(TokenKind.Identifier, $"Expected {kind} name.");
+
+        Consume(TokenKind.LeftParen, "Expected '(' before parameters.");
+
+        // Get the list of parameters.  This is similar to how arguments are parsed.
+
+        List<Token> parameters = new();
+        if (!Check(TokenKind.RightParen))
+        {
+            parameters.Add(Consume(TokenKind.Identifier, "Expected a parameter name."));
+            while (Match(TokenKind.Comma))
+            {
+                parameters.Add(Consume(TokenKind.Identifier, "Expected a parameter name."));
+            }
+        }
+
+        Consume(TokenKind.RightParen, "Expected ')' after function parameters.");
+        Consume(TokenKind.LeftBrace, "Expected '{' after function parameters.");
+
+        // Parse the body
+        List<IStmt?> body = Block();
+
+        return new FunctionStmt(name, parameters, body);
     }
 
     private IStmt PrintStatement()
