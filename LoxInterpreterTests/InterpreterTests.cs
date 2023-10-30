@@ -78,6 +78,12 @@ public class InterpreterTests
     }
 
     [Fact]
+    public void TestStringIsNotCallable()
+    {
+        VerifyThrows(typeof(RuntimeError), "\"notCallable\"(1, nil, \"param\")");
+    }
+
+    [Fact]
     public void TestParseError()
     {
         VerifyThrows(typeof(ParseError), "(5.0");

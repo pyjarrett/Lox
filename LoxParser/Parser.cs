@@ -385,7 +385,7 @@ public class Parser
     /// Unary expression parse.
     /// </summary>
     ///
-    /// Of the form `(! | + | -)unary | primary`
+    /// Of the form `(! | + | -)unary | call`
     public IExpr Unary()
     {
         if (Match(TokenKind.Plus, TokenKind.Minus, TokenKind.Not))
@@ -395,7 +395,55 @@ public class Parser
             return new LoxAst.UnaryExpr(op, expr);
         }
 
-        return Primary();
+        return Call();
+    }
+
+    public IExpr Call()
+    {
+        IExpr expr = Primary();
+
+        while (true)
+        {
+            if (Match(TokenKind.LeftParen))
+            {
+                expr = FinishCall(expr);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    public IExpr FinishCall(IExpr callee)
+    {
+        List<IExpr> arguments = new();
+
+        // Parse any parameters.
+        if (!Check(TokenKind.RightParen))
+        {
+            arguments.Add(Expression());
+
+            // There are commas after each additional argument.
+            while (Match(TokenKind.Comma))
+            {
+                // The bytecode interpreter is simplified by limiting the
+                // number of arguments, so also limit the tree-walk interpreter.
+                if (arguments.Count >= MaxArgumentsInFunctionCall)
+                {
+                    Error(Peek(), "Exceeded maximum number of arguments to function.");
+                }
+
+                arguments.Add(Expression());
+            }
+        }
+
+        // Parenthesis after arguments, used for error reporting.
+        Token paren = Consume(TokenKind.RightParen, "Expected ')' after function call.");
+
+        return new CallExpr(callee, paren, arguments);
     }
 
     public IExpr Primary()
@@ -570,4 +618,5 @@ public class Parser
     }
 
     private int current = 0;
+    private const int MaxArgumentsInFunctionCall = 255;
 }

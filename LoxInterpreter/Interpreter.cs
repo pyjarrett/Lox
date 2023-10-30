@@ -59,11 +59,33 @@ public class StringBufferOutput : IInterpreterOutput
     private StringBuilder errorLog = new();
 }
 
+internal class ClockNativeCallable : LoxCallable
+{
+    public object Call(Interpreter interpreter, List<object?> arguments)
+    {
+        return DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+    }
+
+    public int Arity()
+    {
+        return 0;
+    }
+
+    public override string ToString()
+    {
+        return "<native fn>";
+    }
+}
+
 public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 {
     public Interpreter(IInterpreterOutput? targetOutput = null)
     {
         output = targetOutput ?? new ConsoleOutput();
+        
+        globals.Define("clock", new ClockNativeCallable());
+
+        environment = globals;
     }
 
     public void Interpret(List<IStmt?> stmts)
@@ -209,6 +231,32 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         throw new RuntimeError(node.Operator, "Invalid unary expression.");
     }
 
+    public object? VisitCallExpr(CallExpr node)
+    {
+        object? callee = Evaluate(node.Callee);
+
+        // Evaluate all of the arguments for the node.
+        List<object?> arguments = new();
+
+        foreach (var arg in node.Arguments)
+        {
+            arguments.Add(Evaluate(arg));
+        }
+
+        if (callee is LoxCallable loxCallable)
+        {
+            if (arguments.Count != loxCallable.Arity())
+            {
+                throw new RuntimeError(node.Paren,
+                    $"Expected {loxCallable.Arity()} arguments but found {arguments.Count} arguments.");
+            }
+
+            return loxCallable.Call(this, arguments);
+        }
+
+        throw new RuntimeError(node.Paren, "Can only call functions and classes.");
+    }
+
     public object? VisitAssignmentExpr(AssignmentExpr node)
     {
         object? value = node.Value.Accept(this);
@@ -344,6 +392,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         stmt.Accept(this);
     }
 
-    private Environment environment = new();
+    private readonly Environment globals = new();
+    private Environment environment;
     private IInterpreterOutput output;
 }

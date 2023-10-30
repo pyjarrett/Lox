@@ -37,6 +37,12 @@ public class AstVisitor : IExprVisitor<string>
         return $"({node.Operator.Lexeme} {node.Right.Accept(this)})";
     }
 
+    public string VisitCallExpr(CallExpr node)
+    {
+        var args = string.Join(',', node.Arguments.Select(arg => $"{arg}"));
+        return $"(Call {args})";
+    }
+
     public string VisitAssignmentExpr(AssignmentExpr node)
     {
         return $"{node.Name} = {node.Value.Accept(this)}";

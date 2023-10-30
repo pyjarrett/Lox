@@ -35,6 +35,13 @@
                         <Variable Type="IExpr" Name="Right"/>
                     </Variables>
                 </SubType>
+                <SubType Name="Call">
+                    <Variables>
+                        <Variable Type="IExpr" Name="Callee"/>
+                        <Variable Type="Token" Name="Paren"/>
+                        <Variable Type="List&lt;IExpr&gt;" Name="Arguments"/>
+                    </Variables>
+                </SubType>
                 <SubType Name="Assignment">
                     <Variables>
                         <Variable Type="Token" Name="Name"/>
