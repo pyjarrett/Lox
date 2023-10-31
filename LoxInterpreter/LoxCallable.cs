@@ -6,7 +6,7 @@
 /// </summary>
 public interface LoxCallable
 {
-    object Call(Interpreter interpreter, List<object?> arguments);
+    object? Call(Interpreter interpreter, List<object?> arguments);
     
     /// <summary>
     /// The number of parameters to this callable object.

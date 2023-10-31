@@ -4,23 +4,29 @@ namespace LoxInterpreter;
 
 public class LoxFunction : LoxCallable
 {
-    public LoxFunction(FunctionStmt decl)
+    public LoxFunction(FunctionStmt decl, Environment env)
     {
         declaration = decl;
+        closure = env;
     }
 
-    public object Call(Interpreter interpreter, List<object?> arguments)
+    public object? Call(Interpreter interpreter, List<object?> arguments)
     {
-        Environment environment = new Environment(interpreter.globals);
+        Environment environment = new Environment(closure);
         for (int i = 0; i < declaration.Params.Count; ++i)
         {
             environment.Define(declaration.Params[i].Lexeme, arguments[i]);
         }
 
-        interpreter.ExecuteBlock(declaration.Body, environment);
-
-        // TODO: Weird this isn't a return of a value.
-        return null;
+        try
+        {
+            interpreter.ExecuteBlock(declaration.Body, environment);
+            return null;
+        }
+        catch (ReturnJump jump)
+        {
+            return jump.Value;
+        }
     }
 
     public int Arity()
@@ -34,4 +40,5 @@ public class LoxFunction : LoxCallable
     }
 
     private FunctionStmt declaration;
+    private Environment closure;
 }

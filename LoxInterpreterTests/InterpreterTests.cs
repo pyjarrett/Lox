@@ -133,6 +133,64 @@ for (var a = 1; a <= 5; a = a + 2) {
 ");
     }
 
+    [Fact]
+    public void TestFnCall()
+    {
+        VerifyOutput(@"30
+",
+            @"fun add(a, b) {
+return a + b;
+}
+print add(10, 20);"
+        );
+    }
+
+    [Fact]
+    public void TestNestedClosure()
+    {
+        VerifyOutput(@"1
+2
+",
+            @"fun makeCounter() {
+    var i = 0;
+    fun count() {
+        i = i + 1;
+        print i;
+    }
+    return count;
+}
+
+var counter = makeCounter();
+counter();
+counter();
+");
+    }
+
+    [Fact]
+    public void TestFibonacci()
+    {
+        VerifyOutput(@"0
+1
+1
+2
+3
+5
+8
+13
+21
+34
+",
+            @"fun fib(n) {
+    if (n <= 1) return n;
+    return fib(n - 2) + fib(n - 1);
+}
+
+for (var i = 0; i < 10; i = i + 1) {
+    print fib(i);
+}
+");
+    }
+
     private void VerifyThrows(Type exception, string text)
     {
         Lexer lexer = new Lexer(text);
@@ -156,6 +214,7 @@ for (var a = 1; a <= 5; a = a + 2) {
         Parser parser = new Parser(lexer.ScanTokens());
         Interpreter interpreter = new Interpreter(testLog);
         interpreter.Interpret(parser.Parse());
+        Assert.Equal("", testLog.ErrorLog);
         Assert.Equal(expected, testLog.OutputLog);
     }
 }

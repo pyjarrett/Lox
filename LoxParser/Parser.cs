@@ -113,6 +113,11 @@ public class Parser
             return ForStatement();
         }
 
+        if (Match(TokenKind.Return))
+        {
+            return ReturnStatement();
+        }
+
         return ExpressionStatement();
     }
 
@@ -208,6 +213,18 @@ public class Parser
         body = new BlockStmt(new List<IStmt?>() { initializer, new WhileStmt(condition, body!) });
 
         return body;
+    }
+
+    private IStmt? ReturnStatement()
+    {
+        Token keyword = Previous();
+        IExpr value = null;
+        if (!Check(TokenKind.Semicolon))
+        {
+            value = Expression();
+        }
+        Consume(TokenKind.Semicolon, "Expected ';' after return expression.");
+        return new ReturnStmt(keyword, value);
     }
 
     /// <summary>

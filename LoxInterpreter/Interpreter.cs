@@ -21,6 +21,19 @@ public class RuntimeError : Exception
     }
 }
 
+/// <summary>
+/// Type used to pass a value up through the tree-walk interpreter callstack.  
+/// </summary>
+public class ReturnJump : Exception
+{
+    public object? Value { get; }
+
+    public ReturnJump(object? value)
+    {
+        Value = value;
+    }
+}
+
 public interface IInterpreterOutput
 {
     void Output(string message);
@@ -61,7 +74,7 @@ public class StringBufferOutput : IInterpreterOutput
 
 internal class ClockNativeCallable : LoxCallable
 {
-    public object Call(Interpreter interpreter, List<object?> arguments)
+    public object? Call(Interpreter interpreter, List<object?> arguments)
     {
         return DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
     }
@@ -291,7 +304,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 
     public Unit VisitFunctionStmt(FunctionStmt node)
     {
-        LoxFunction fn = new LoxFunction(node);
+        LoxFunction fn = new LoxFunction(node, environment);
         environment.Define(node.Name.Lexeme, fn);
         return new();
     }
@@ -349,6 +362,17 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         }
 
         return new();
+    }
+
+    public Unit VisitReturnStmt(ReturnStmt node)
+    {
+        object? value = null;
+        if (node.Value != null)
+        {
+            value = Evaluate(node.Value);
+        }
+
+        throw new ReturnJump(value);
     }
 
     private bool IsTruthy(object? value)
