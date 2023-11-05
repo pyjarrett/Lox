@@ -38,7 +38,9 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     /// </summary>
     public Unit VisitVariableExpr(VariableExpr node)
     {        
-        if (scopes.Count > 0 && CurrentScope()[node.Name.Lexeme] == false)
+        // Trying to use a variable before it has been defined.
+        // C# difference from Java here, Java's Map returns null if the key doesn't exist.
+        if (scopes.Count > 0 && CurrentScope().ContainsKey(node.Name.Lexeme) && CurrentScope()[node.Name.Lexeme] == false)
         {
             _interpreter.Error(node.Name, "Can't usage a variable into its own initializer.");
         }
@@ -158,8 +160,12 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     private void Define(Token name)
     {
         if (scopes.Count == 0) return;
+        
+        // Variable should already have been declared.
         Debug.Assert(CurrentScope().ContainsKey(name.Lexeme));
         Debug.Assert(CurrentScope()[name.Lexeme] == false);
+        
+        // Define this variable.
         CurrentScope()[name.Lexeme] = true;
     }
 
@@ -200,8 +206,11 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         // looking for a match to the given variable.
         for (var i = scopes.Count - 1; i >= 0; --i)
         {
-            _interpreter.Resolve(expr, scopes.Count - i - 1);
-            return;
+            if (scopes[i].ContainsKey(name.Lexeme))
+            {
+                _interpreter.Resolve(expr, scopes.Count - i - 1);
+                return;
+            }
         }
     }
 

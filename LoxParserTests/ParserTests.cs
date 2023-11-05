@@ -5,50 +5,6 @@ using Xunit.Abstractions;
 
 namespace LoxParserTests;
 
-public class AstVisitor : IExprVisitor<string>
-{
-    public string VisitBinaryExpr(BinaryExpr node)
-    {
-        return $"({node.Operator.Lexeme} {node.Left.Accept(this)} {node.Right.Accept(this)})";
-    }
-
-    public string VisitLogicalExpr(LogicalExpr node)
-    {
-        return $"({node.Operator.Lexeme} {node.Left.Accept(this)} {node.Right.Accept(this)}";
-    }
-
-    public string VisitGroupingExpr(GroupingExpr node)
-    {
-        return $"(group {node.Expression.Accept(this)})";
-    }
-
-    public string VisitLiteralExpr(LiteralExpr node)
-    {
-        return $"{node.Value}";
-    }
-
-    public string VisitVariableExpr(VariableExpr node)
-    {
-        return $"VARIABLE: {node.Name.Lexeme}";
-    }
-
-    public string VisitUnaryExpr(UnaryExpr node)
-    {
-        return $"({node.Operator.Lexeme} {node.Right.Accept(this)})";
-    }
-
-    public string VisitCallExpr(CallExpr node)
-    {
-        var args = string.Join(',', node.Arguments.Select(arg => $"{arg}"));
-        return $"(Call {args})";
-    }
-
-    public string VisitAssignmentExpr(AssignmentExpr node)
-    {
-        return $"{node.Name} = {node.Value.Accept(this)}";
-    }
-}
-
 public class ParserTests
 {
     private ITestOutputHelper output;
@@ -80,7 +36,7 @@ public class ParserTests
         Parser parser = new Parser(lexer.ScanTokens());
 
         IExpr expr = parser.Expression();
-        AstVisitor astVisitor = new AstVisitor();
+        AstPrinterVisitor astVisitor = new();
         Assert.Equal("(- (+ 1 (* (/ 2 3) 4)) (- (- 5)))", expr.Accept(astVisitor));
     }
 
@@ -91,7 +47,7 @@ public class ParserTests
         Parser parser = new Parser(lexer.ScanTokens());
 
         IExpr expr = parser.Expression();
-        AstVisitor astVisitor = new AstVisitor();
+        AstPrinterVisitor astVisitor = new();
         Assert.Equal("(/ (group (+ 1 2)) (group (- (group (* 3 4)) (- (- 5)))))", expr.Accept(astVisitor));
     }
 }

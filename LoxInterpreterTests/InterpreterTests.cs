@@ -1,3 +1,4 @@
+using LoxAst;
 using LoxLexer;
 using LoxInterpreter;
 using LoxParser;
@@ -214,6 +215,15 @@ for (var i = 0; i < 10; i = i + 1) {
         Parser parser = new Parser(lexer.ScanTokens());
         var statements = parser.Parse();
         Interpreter interpreter = new Interpreter(testLog);
+
+        AstPrinterVisitor printer = new();
+        string ast = "";
+        foreach (var stmt in statements)
+        {
+            ast += stmt?.Accept(printer);
+        }
+        Console.WriteLine(ast);
+        
         Resolver resolver = new Resolver(interpreter);
         resolver.Resolve(statements);
         interpreter.Interpret(statements);
