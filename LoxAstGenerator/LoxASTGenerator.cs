@@ -115,10 +115,30 @@ public static class LoxASTGenerator
 
             foreach (var subType in group.SubTypes)
             {
-                var variables = subType.Variables.Select(variable => $"{variable.Type} {variable.Name}").ToArray();
                 file.WriteLine(
-                    $"public readonly record struct {subType.Name}{group.Base} ({string.Join(", ", variables)}) : I{group.Base} {{");
+                    $"public class {subType.Name}{group.Base} : I{group.Base} {{");
 
+                file.WriteLine();
+                file.Write($"    public {subType.Name}{group.Base}(");
+
+                var variableTypeNamePairs =
+                    subType.Variables.Select(variable => $"{variable.Type} {variable.Name}").ToArray();
+                file.WriteLine(string.Join(",", variableTypeNamePairs) + ")");
+                file.WriteLine("{");
+                foreach (var variable in subType.Variables)
+                {
+                    file.WriteLine($"        this.{variable.Name} = {variable.Name};");
+                }
+
+                file.WriteLine("    }");
+                file.WriteLine();
+                
+                var variableProperties = subType.Variables.Select(variable => $"public {variable.Type} {variable.Name} {{ get; set; }}").ToArray();
+                foreach (var property in variableProperties)
+                {
+                    file.WriteLine("        " + property);
+                }
+                
                 file.WriteLine($"    public TRetType Accept<TRetType>({visitorName} visitor) {{");
                 file.WriteLine($"        return visitor.Visit{subType.Name}{group.Base}(this);");
                 file.WriteLine("    }");

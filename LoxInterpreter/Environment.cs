@@ -1,4 +1,5 @@
-﻿using LoxLexer;
+﻿using System.Diagnostics;
+using LoxLexer;
 
 namespace LoxInterpreter;
 
@@ -42,6 +43,27 @@ public class Environment
         return enclosing.Get(name);
     }
 
+    public object GetAt(int distance, Token name)
+    {
+        return Ancestor(distance)!.Get(name);
+    }
+
+    /// <summary>
+    /// Ascend up through enclosing environments, looking for the Nth ancestor.
+    /// This environment is considered the 0th ancestor, and `enclosing` is the
+    /// 1st.
+    /// </summary>
+    private Environment? Ancestor(int distance)
+    {
+        Environment? ancestor = this;
+        for (var i = 0; i < distance; ++i)
+        {
+            ancestor = ancestor!.enclosing;
+        }
+
+        return ancestor;
+    }
+
     /// <summary>
     /// Define and potentially redefine a variable with a given name, giving
     /// it the specified value.
@@ -66,6 +88,11 @@ public class Environment
         {
             enclosing.Assign(name, value);
         }
+    }
+
+    public void AssignAt(int distance, Token name, object? value)
+    {
+        Ancestor(distance)!.Assign(name, value);
     }
 
     /// <summary>

@@ -212,8 +212,11 @@ for (var i = 0; i < 10; i = i + 1) {
         StringBufferOutput testLog = new StringBufferOutput();
         Lexer lexer = new Lexer(input);
         Parser parser = new Parser(lexer.ScanTokens());
+        var statements = parser.Parse();
         Interpreter interpreter = new Interpreter(testLog);
-        interpreter.Interpret(parser.Parse());
+        Resolver resolver = new Resolver(interpreter);
+        resolver.Resolve(statements);
+        interpreter.Interpret(statements);
         Assert.Equal("", testLog.ErrorLog);
         Assert.Equal(expected, testLog.OutputLog);
     }

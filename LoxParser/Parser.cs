@@ -511,7 +511,7 @@ public class Parser
 
         if (Match(TokenKind.Nil))
         {
-            return new LoxAst.LiteralExpr();
+            return new LoxAst.LiteralExpr(null);
         }
 
         if (Match(TokenKind.String, TokenKind.Number))

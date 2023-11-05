@@ -129,6 +129,18 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         return expr.Accept(this);
     }
 
+    public void Error(Token token, string message)
+    {
+        if (token.Kind == TokenKind.EndOfFile)
+        {
+            output.Error($"Error at end of file: {message}");
+        }
+        else
+        {
+            output.Error($"Error at token '{token.Lexeme}': {message}");
+        }
+    }
+
     public object? VisitBinaryExpr(BinaryExpr node)
     {
         var left = node.Left.Accept(this);
@@ -204,7 +216,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 
     public object? VisitVariableExpr(VariableExpr node)
     {
-        var value = environment.Get(node.Name);
+        object? value = LookupVariable(node.Name, node);
         if (value is UninitializedValue)
         {
             throw new RuntimeError(node.Name, "Accessing uninitialized value.");
@@ -273,7 +285,17 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
     public object? VisitAssignmentExpr(AssignmentExpr node)
     {
         object? value = node.Value.Accept(this);
-        environment.Assign(node.Name, value);
+        
+        if (locals.TryGetValue(node, out int distance))
+        {
+            environment.AssignAt(distance, node.Name, value);
+            
+        }
+        else
+        {
+            globals.Assign(node.Name, value);
+        }
+        
         return value;
     }
 
@@ -421,7 +443,28 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         stmt.Accept(this);
     }
 
+    public void Resolve(IExpr expr, int depth)
+    {
+        locals.Add(expr, depth);
+    }
+
+    /// Retrieve variable from globals if is not local, otherwise
+    /// look it up in the appropriate environment.
+    /// <param name="expr">Node to uniquely identify this variable lookup.</param>
+    private object? LookupVariable(Token name, IExpr expr)
+    {
+        if (locals.TryGetValue(expr, out int distance))
+        {
+            return environment.GetAt(distance, name);
+        }
+        else
+        {
+            return globals.Get(name);
+        }
+    }
+
     public readonly Environment globals = new();
+    private Dictionary<IExpr, int> locals = new();
 
     private Environment environment;
     private IInterpreterOutput output;
