@@ -2,8 +2,7 @@ using LoxLexer;
 
 namespace LoxAst;
 
-public interface IStmtVisitor<TRetType>
-{
+public interface IStmtVisitor<TRetType> {
     TRetType VisitExpressionStmt(ExpressionStmt node);
     TRetType VisitPrintStmt(PrintStmt node);
     TRetType VisitVariableDeclarationStmt(VariableDeclarationStmt node);
@@ -11,16 +10,16 @@ public interface IStmtVisitor<TRetType>
     TRetType VisitIfStmt(IfStmt node);
     TRetType VisitWhileStmt(WhileStmt node);
     TRetType VisitFunctionStmt(FunctionStmt node);
+    TRetType VisitClassStmt(ClassStmt node);
     TRetType VisitReturnStmt(ReturnStmt node);
 }
 
-public interface IStmt
-{
+public interface IStmt {
     TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor);
 }
 
-public class ExpressionStmt : IStmt
-{
+public class ExpressionStmt : IStmt {
+
     public ExpressionStmt(IExpr Expression)
     {
         this.Expression = Expression;
@@ -28,14 +27,13 @@ public class ExpressionStmt : IStmt
 
     public IExpr Expression { get; set; }
 
-    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor)
-    {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitExpressionStmt(this);
     }
 }
 
-public class PrintStmt : IStmt
-{
+public class PrintStmt : IStmt {
+
     public PrintStmt(IExpr Expression)
     {
         this.Expression = Expression;
@@ -43,14 +41,13 @@ public class PrintStmt : IStmt
 
     public IExpr Expression { get; set; }
 
-    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor)
-    {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitPrintStmt(this);
     }
 }
 
-public class VariableDeclarationStmt : IStmt
-{
+public class VariableDeclarationStmt : IStmt {
+
     public VariableDeclarationStmt(Token Name, IExpr? Initializer)
     {
         this.Name = Name;
@@ -60,14 +57,13 @@ public class VariableDeclarationStmt : IStmt
     public Token Name { get; set; }
     public IExpr? Initializer { get; set; }
 
-    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor)
-    {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitVariableDeclarationStmt(this);
     }
 }
 
-public class BlockStmt : IStmt
-{
+public class BlockStmt : IStmt {
+
     public BlockStmt(List<IStmt?> Block)
     {
         this.Block = Block;
@@ -75,14 +71,13 @@ public class BlockStmt : IStmt
 
     public List<IStmt?> Block { get; set; }
 
-    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor)
-    {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitBlockStmt(this);
     }
 }
 
-public class IfStmt : IStmt
-{
+public class IfStmt : IStmt {
+
     public IfStmt(IExpr Condition, IStmt ThenBranch, IStmt? ElseBranch)
     {
         this.Condition = Condition;
@@ -94,14 +89,13 @@ public class IfStmt : IStmt
     public IStmt ThenBranch { get; set; }
     public IStmt? ElseBranch { get; set; }
 
-    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor)
-    {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitIfStmt(this);
     }
 }
 
-public class WhileStmt : IStmt
-{
+public class WhileStmt : IStmt {
+
     public WhileStmt(IExpr Condition, IStmt Body)
     {
         this.Condition = Condition;
@@ -111,14 +105,13 @@ public class WhileStmt : IStmt
     public IExpr Condition { get; set; }
     public IStmt Body { get; set; }
 
-    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor)
-    {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitWhileStmt(this);
     }
 }
 
-public class FunctionStmt : IStmt
-{
+public class FunctionStmt : IStmt {
+
     public FunctionStmt(Token Name, List<Token> Params, List<IStmt?> Body)
     {
         this.Name = Name;
@@ -130,14 +123,29 @@ public class FunctionStmt : IStmt
     public List<Token> Params { get; set; }
     public List<IStmt?> Body { get; set; }
 
-    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor)
-    {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitFunctionStmt(this);
     }
 }
 
-public class ReturnStmt : IStmt
-{
+public class ClassStmt : IStmt {
+
+    public ClassStmt(Token Name, List<FunctionStmt> Methods)
+    {
+        this.Name = Name;
+        this.Methods = Methods;
+    }
+
+    public Token Name { get; set; }
+    public List<FunctionStmt> Methods { get; set; }
+
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
+        return visitor.VisitClassStmt(this);
+    }
+}
+
+public class ReturnStmt : IStmt {
+
     public ReturnStmt(Token Keyword, IExpr? Value)
     {
         this.Keyword = Keyword;
@@ -147,8 +155,8 @@ public class ReturnStmt : IStmt
     public Token Keyword { get; set; }
     public IExpr? Value { get; set; }
 
-    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor)
-    {
+    public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {
         return visitor.VisitReturnStmt(this);
     }
 }
+

@@ -103,6 +103,12 @@
                         <Variable Type="List&lt;IStmt?&gt;" Name="Body"/>
                     </Variables>
                 </SubType>
+                <SubType Name="Class">
+                    <Variables>
+                        <Variable Type="Token" Name="Name"/>
+                        <Variable Type="List&lt;FunctionStmt&gt;" Name="Methods"/>
+                    </Variables>
+                </SubType>
                 <SubType Name="Return">
                     <Variables>
                         <Variable Type="Token" Name="Keyword"/>
