@@ -35,7 +35,17 @@ public static class LoxMain
         {
             Lexer lexer = new Lexer(text);
             Parser parser = new Parser(lexer.ScanTokens());
-            interpreter.Interpret(parser.Parse());
+            var statements = parser.Parse();
+            
+            Resolver resolver = new Resolver(interpreter);
+            resolver.Resolve(statements);
+
+            if (interpreter.HasError)
+            {
+                Console.Error.WriteLine("Interpreter error");
+            }
+            
+            interpreter.Interpret(statements);
         }
         catch (ParseError parseError)
         {

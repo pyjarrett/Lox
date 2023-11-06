@@ -37,10 +37,11 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     /// Evaluates the value of a variable.
     /// </summary>
     public Unit VisitVariableExpr(VariableExpr node)
-    {        
+    {
         // Trying to use a variable before it has been defined.
         // C# difference from Java here, Java's Map returns null if the key doesn't exist.
-        if (scopes.Count > 0 && CurrentScope().ContainsKey(node.Name.Lexeme) && CurrentScope()[node.Name.Lexeme] == false)
+        if (scopes.Count > 0 && CurrentScope().ContainsKey(node.Name.Lexeme) &&
+            CurrentScope()[node.Name.Lexeme] == false)
         {
             _interpreter.Error(node.Name, "Can't usage a variable into its own initializer.");
         }
@@ -136,12 +137,18 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     {
         Declare(node.Name);
         Define(node.Name);
-        ResolveFunction(node);
+        ResolveFunction(node, FunctionType.Function);
         return new();
     }
 
     public Unit VisitReturnStmt(ReturnStmt node)
     {
+        // Can't have a `return` at the top level, outside of all functions.
+        if (currentFunction == FunctionType.None)
+        {
+            _interpreter.Error(node.Keyword, "Return must be inside a function.");
+        }
+        
         if (node.Value != null)
         {
             Resolve(node.Value);
@@ -153,18 +160,22 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     private void Declare(Token name)
     {
         if (scopes.Count == 0) return;
-        Debug.Assert(!CurrentScope().ContainsKey(name.Lexeme));
+
+        if (CurrentScope().ContainsKey(name.Lexeme))
+        {
+            _interpreter.Error(name, "Already a variable with this name in this scope.");
+        }
         CurrentScope()[name.Lexeme] = false;
     }
 
     private void Define(Token name)
     {
         if (scopes.Count == 0) return;
-        
+
         // Variable should already have been declared.
         Debug.Assert(CurrentScope().ContainsKey(name.Lexeme));
         Debug.Assert(CurrentScope()[name.Lexeme] == false);
-        
+
         // Define this variable.
         CurrentScope()[name.Lexeme] = true;
     }
@@ -177,8 +188,12 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         }
     }
 
-    private void ResolveFunction(FunctionStmt node)
+    private void ResolveFunction(FunctionStmt node, FunctionType functionType)
     {
+        // Preserve previous function type due to possibly nested functions.
+        FunctionType enclosingFunction = currentFunction;
+        currentFunction = functionType;
+        
         BeginScope();
         foreach (var param in node.Params)
         {
@@ -188,6 +203,9 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
 
         Resolve(node.Body);
         EndScope();
+        
+        // Restore previous function type.
+        currentFunction = enclosingFunction;
     }
 
     private void Resolve(IStmt node)
@@ -243,4 +261,12 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     /// False   = declared
     /// True    = defined
     private List<Dictionary<string, Boolean>> scopes = new();
+
+    private enum FunctionType
+    {
+        None,
+        Function
+    }
+
+    private FunctionType currentFunction = FunctionType.None;
 }

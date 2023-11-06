@@ -139,6 +139,8 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         {
             output.Error($"Error at token '{token.Lexeme}': {message}");
         }
+
+        HasError = true;
     }
 
     public object? VisitBinaryExpr(BinaryExpr node)
@@ -462,6 +464,8 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
             return globals.Get(name);
         }
     }
+
+    public bool HasError { get; private set; } = false;
 
     public readonly Environment globals = new();
     private Dictionary<IExpr, int> locals = new();
