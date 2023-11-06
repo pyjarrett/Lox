@@ -326,6 +326,14 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         return new();
     }
 
+    public Unit VisitClassStmt(ClassStmt node)
+    {
+        var className = node.Name.Lexeme;
+        LoxClass klass = new(className);
+        environment.Define(className, klass);
+        return new();
+    }
+
     public Unit VisitFunctionStmt(FunctionStmt node)
     {
         LoxFunction fn = new LoxFunction(node, environment);

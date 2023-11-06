@@ -133,6 +133,13 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         return new();
     }
 
+    public Unit VisitClassStmt(ClassStmt node)
+    {
+        Declare(node.Name);
+        Define(node.Name);
+        return new();
+    }
+
     public Unit VisitFunctionStmt(FunctionStmt node)
     {
         Declare(node.Name);

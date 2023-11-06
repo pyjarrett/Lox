@@ -94,6 +94,15 @@ public class AstPrinterVisitor : IExprVisitor<string>, IStmtVisitor<string>
         return $"while {node.Condition.Accept(this)}\n{loop}\n";
     }
 
+    public string VisitClassStmt(ClassStmt node)
+    {
+        var str = $"class {node.Name.Lexeme}";
+        Push();
+        str += node.Methods.Select(method => method.Accept(this));
+        Pop();
+        return str;
+    }
+
     public string VisitFunctionStmt(FunctionStmt node)
     {
         return $"{Indent}function {node.Name.Lexeme};\n";

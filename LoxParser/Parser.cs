@@ -61,6 +61,11 @@ public class Parser
                 return VariableDeclarationStatement();
             }
 
+            if (Match(TokenKind.Class))
+            {
+                return ClassDeclarationStatement();
+            }
+            
             if (Match(TokenKind.Fun))
             {
                 return FunctionDeclarationStatement("function");
@@ -267,11 +272,31 @@ public class Parser
         return new VariableDeclarationStmt(identifier, initializer);
     }
 
+    // class_declaration := class IDENTIFIER '{' function* '}'
+    private IStmt ClassDeclarationStatement()
+    {
+        Token className = Consume(TokenKind.Identifier, "Expected a class name.");
+
+        Consume(TokenKind.LeftBrace, "Expected '{' after class name.");
+
+        List<FunctionStmt> methods = new();
+        
+        // Keep parsing functions as long as they are more.
+        while (!Check(TokenKind.RightBrace) && !IsAtEnd())
+        {
+            methods.Add(FunctionDeclarationStatement("method"));
+        }
+        
+        Consume(TokenKind.RightBrace, "Expected '}' after class.");
+
+        return new ClassStmt(className, methods);
+    }
+
     /// <summary>
     /// Parses a function declaration, reporting errors using the given 'kind'
     /// of expected function.
     /// </summary>
-    private IStmt FunctionDeclarationStatement(string kind)
+    private FunctionStmt FunctionDeclarationStatement(string kind)
     {
         Token name = Consume(TokenKind.Identifier, $"Expected {kind} name.");
 
