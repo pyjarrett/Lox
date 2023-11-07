@@ -42,6 +42,19 @@
                         <Variable Type="List&lt;IExpr&gt;" Name="Arguments"/>
                     </Variables>
                 </SubType>
+                <SubType Name="Get">
+                    <Variables>
+                        <Variable Type="IExpr" Name="Object"/>
+                        <Variable Type="Token" Name="Name"/>
+                    </Variables>
+                </SubType>
+                <SubType Name="Set">
+                    <Variables>
+                        <Variable Type="IExpr" Name="Object"/>
+                        <Variable Type="Token" Name="Name"/>
+                        <Variable Type="IExpr" Name="Value"/>
+                    </Variables>
+                </SubType>
                 <SubType Name="Assignment">
                     <Variables>
                         <Variable Type="Token" Name="Name"/>

@@ -67,6 +67,19 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         return new();
     }
 
+    public Unit VisitGetExpr(GetExpr node)
+    {
+        Resolve(node.Object);
+        return new();
+    }
+
+    public Unit VisitSetExpr(SetExpr node)
+    {
+        Resolve(node.Object);
+        Resolve(node.Value);
+        return new();
+    }
+
     public Unit VisitAssignmentExpr(AssignmentExpr node)
     {
         Resolve(node.Value);
@@ -215,8 +228,12 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         currentFunction = enclosingFunction;
     }
 
-    private void Resolve(IStmt node)
+    private void Resolve(IStmt? node)
     {
+        if (node == null)
+        {
+            return;
+        }
         node.Accept(this);
     }
 

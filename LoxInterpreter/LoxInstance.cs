@@ -1,9 +1,9 @@
-﻿namespace LoxInterpreter;
+﻿using LoxLexer;
+
+namespace LoxInterpreter;
 
 public class LoxInstance
 {
-    private LoxClass klass;
-
     public LoxInstance(LoxClass klass)
     {
         this.klass = klass;
@@ -13,4 +13,22 @@ public class LoxInstance
     {
         return $"{klass.Name} instance";
     }
+
+    public object? Get(Token name)
+    {
+        if (fields.ContainsKey(name.Lexeme))
+        {
+            return fields[name.Lexeme];
+        }
+
+        throw new RuntimeError(name, $"Unknown property: '{name.Lexeme}'");
+    }
+
+    public void Set(Token name, object? value)
+    {
+        fields[name.Lexeme] = value;
+    }
+
+    private LoxClass klass;
+    private Dictionary<string, object?> fields = new();
 }

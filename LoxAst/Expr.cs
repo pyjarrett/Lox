@@ -9,6 +9,8 @@ public interface IExprVisitor<TRetType> {
     TRetType VisitVariableExpr(VariableExpr node);
     TRetType VisitUnaryExpr(UnaryExpr node);
     TRetType VisitCallExpr(CallExpr node);
+    TRetType VisitGetExpr(GetExpr node);
+    TRetType VisitSetExpr(SetExpr node);
     TRetType VisitAssignmentExpr(AssignmentExpr node);
     TRetType VisitLogicalExpr(LogicalExpr node);
 }
@@ -108,6 +110,40 @@ public class CallExpr : IExpr {
 
     public TRetType Accept<TRetType>(IExprVisitor<TRetType> visitor) {
         return visitor.VisitCallExpr(this);
+    }
+}
+
+public class GetExpr : IExpr {
+
+    public GetExpr(IExpr Object, Token Name)
+    {
+        this.Object = Object;
+        this.Name = Name;
+    }
+
+    public IExpr Object { get; set; }
+    public Token Name { get; set; }
+
+    public TRetType Accept<TRetType>(IExprVisitor<TRetType> visitor) {
+        return visitor.VisitGetExpr(this);
+    }
+}
+
+public class SetExpr : IExpr {
+
+    public SetExpr(IExpr Object, Token Name, IExpr Value)
+    {
+        this.Object = Object;
+        this.Name = Name;
+        this.Value = Value;
+    }
+
+    public IExpr Object { get; set; }
+    public Token Name { get; set; }
+    public IExpr Value { get; set; }
+
+    public TRetType Accept<TRetType>(IExprVisitor<TRetType> visitor) {
+        return visitor.VisitSetExpr(this);
     }
 }
 

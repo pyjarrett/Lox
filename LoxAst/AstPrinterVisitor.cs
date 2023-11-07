@@ -8,7 +8,7 @@ public class AstPrinterVisitor : IExprVisitor<string>, IStmtVisitor<string>
     ///     stmt3
     public string Visit(List<IStmt?> block)
     {
-        return Indent + string.Join($"\n{Indent}", block.Select((x) => x.Accept(this)));
+        return Indent + string.Join($"\n{Indent}", block.Select((x) => x?.Accept(this)));
     }
 
     public string VisitBinaryExpr(BinaryExpr node)
@@ -45,6 +45,16 @@ public class AstPrinterVisitor : IExprVisitor<string>, IStmtVisitor<string>
     {
         var args = string.Join(',', node.Arguments.Select(arg => $"{arg}"));
         return $"(Call {args})";
+    }
+
+    public string VisitGetExpr(GetExpr node)
+    {
+        return $"(Get {node.Object.Accept(this)} {node.Name.Lexeme})";
+    }
+
+    public string VisitSetExpr(SetExpr node)
+    {
+        return $"(Set {node.Object.Accept(this)} {node.Name.Lexeme} {node.Value.Accept(this)})";
     }
 
     public string VisitAssignmentExpr(AssignmentExpr node)

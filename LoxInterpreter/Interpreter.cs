@@ -284,6 +284,30 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         throw new RuntimeError(node.Paren, "Can only call functions and classes.");
     }
 
+    public object? VisitGetExpr(GetExpr node)
+    {
+        var obj = Evaluate(node.Object);
+        if (obj is LoxInstance loxInstance)
+        {
+            return loxInstance.Get(node.Name);
+        }
+
+        throw new RuntimeError(node.Name, "Only instances can have properties.");
+    }
+
+    public object? VisitSetExpr(SetExpr node)
+    {
+        var obj = Evaluate(node.Object);
+        if (obj is LoxInstance loxInstance)
+        {
+            var value = Evaluate(node.Value);
+            loxInstance.Set(node.Name, value);
+            return value;
+        }
+
+        throw new RuntimeError(node.Name, "Can only call set on an instance.");
+    }
+
     public object? VisitAssignmentExpr(AssignmentExpr node)
     {
         object? value = node.Value.Accept(this);

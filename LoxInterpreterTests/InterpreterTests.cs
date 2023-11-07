@@ -192,6 +192,23 @@ for (var i = 0; i < 10; i = i + 1) {
 ");
     }
 
+    [Fact]
+    public void TestFields()
+    {
+        VerifyOutput(@"", @"class Point {
+    squared_distance_from_origin() {
+        return this.x * this.x + this.y * this.y; 
+    }
+
+// var p = Point();
+// p.x = 3;
+// p.y = 4;
+
+// print p.x;
+// print p.y;
+}");
+    }
+
     private void VerifyThrows(Type exception, string text)
     {
         Lexer lexer = new Lexer(text);

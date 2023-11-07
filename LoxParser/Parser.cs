@@ -336,7 +336,7 @@ public class Parser
     }
 
     /// ```
-    /// assignment := IDENTIFIER "=" assignment
+    /// assignment := ( call "." )? IDENTIFIER "=" assignment
     ///     | logic_or;
     /// ```
     public IExpr Assignment()
@@ -352,6 +352,11 @@ public class Parser
             if (expr is VariableExpr varExpr)
             {
                 return new AssignmentExpr(varExpr.Name, rightHandSide);
+            }
+
+            if (expr is GetExpr getExpr)
+            {
+                return new SetExpr(getExpr.Object, getExpr.Name, rightHandSide);
             }
 
             Error(equals, "Invalid assignment target.");
@@ -474,6 +479,7 @@ public class Parser
         return Call();
     }
 
+    // call := primary ( "(" arguments? ")" | "." IDENTIFIER)*
     public IExpr Call()
     {
         IExpr expr = Primary();
@@ -483,6 +489,11 @@ public class Parser
             if (Match(TokenKind.LeftParen))
             {
                 expr = FinishCall(expr);
+            }
+            else if (Match(TokenKind.Dot))
+            {
+                Token name = Consume(TokenKind.Identifier, "Expected property after '.'");
+                expr = new GetExpr(expr, name);
             }
             else
             {
