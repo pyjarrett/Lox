@@ -11,6 +11,7 @@ public interface IExprVisitor<TRetType> {
     TRetType VisitCallExpr(CallExpr node);
     TRetType VisitGetExpr(GetExpr node);
     TRetType VisitSetExpr(SetExpr node);
+    TRetType VisitThisExpr(ThisExpr node);
     TRetType VisitAssignmentExpr(AssignmentExpr node);
     TRetType VisitLogicalExpr(LogicalExpr node);
 }
@@ -144,6 +145,20 @@ public class SetExpr : IExpr {
 
     public TRetType Accept<TRetType>(IExprVisitor<TRetType> visitor) {
         return visitor.VisitSetExpr(this);
+    }
+}
+
+public class ThisExpr : IExpr {
+
+    public ThisExpr(Token Keyword)
+    {
+        this.Keyword = Keyword;
+    }
+
+    public Token Keyword { get; set; }
+
+    public TRetType Accept<TRetType>(IExprVisitor<TRetType> visitor) {
+        return visitor.VisitThisExpr(this);
     }
 }
 

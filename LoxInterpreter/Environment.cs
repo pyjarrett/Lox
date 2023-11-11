@@ -43,9 +43,9 @@ public class Environment
         return enclosing.Get(name);
     }
 
-    public object GetAt(int distance, Token name)
+    public object? GetAt(int distance, string name)
     {
-        return Ancestor(distance)!.Get(name);
+        return Ancestor(distance)!.values[name];
     }
 
     /// <summary>

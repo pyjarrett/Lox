@@ -21,6 +21,11 @@ public class LoxInstance
             return fields[name.Lexeme];
         }
 
+        LoxFunction? method = klass.FindMethod(name.Lexeme);
+        if (method != null)
+        {
+            return method.Bind(this);
+        }
         throw new RuntimeError(name, $"Unknown property: '{name.Lexeme}'");
     }
 

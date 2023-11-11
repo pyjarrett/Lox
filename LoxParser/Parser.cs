@@ -555,6 +555,11 @@ public class Parser
             return new LoxAst.LiteralExpr(Previous().Literal!);
         }
 
+        if (Match(TokenKind.This))
+        {
+            return new LoxAst.ThisExpr(Previous());
+        }
+        
         if (Match(TokenKind.Identifier))
         {
             return new LoxAst.VariableExpr(Previous());

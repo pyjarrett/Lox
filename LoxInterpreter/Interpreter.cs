@@ -216,6 +216,14 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         return node.Value;
     }
 
+    /// <summary>
+    /// Look up `this` like it's any other variable.
+    /// </summary>
+    public object? VisitThisExpr(ThisExpr node)
+    {
+        return LookupVariable(node.Keyword, node);
+    }
+
     public object? VisitVariableExpr(VariableExpr node)
     {
         object? value = LookupVariable(node.Name, node);
@@ -311,17 +319,16 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
     public object? VisitAssignmentExpr(AssignmentExpr node)
     {
         object? value = node.Value.Accept(this);
-        
+
         if (locals.TryGetValue(node, out int distance))
         {
             environment.AssignAt(distance, node.Name, value);
-            
         }
         else
         {
             globals.Assign(node.Name, value);
         }
-        
+
         return value;
     }
 
@@ -353,14 +360,26 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
     public Unit VisitClassStmt(ClassStmt node)
     {
         var className = node.Name.Lexeme;
-        LoxClass klass = new(className);
-        environment.Define(className, klass);
+
+        environment.Define(className, null);
+        Dictionary<string, LoxFunction> methods = new();
+        foreach (FunctionStmt method in node.Methods)
+        {
+            methods[method.Name.Lexeme] = new LoxFunction(method, environment, method.Name.Lexeme.Equals("init"));
+        }
+        LoxClass klass = new(className, methods);
+        environment.Assign(node.Name, klass);
+
         return new();
     }
 
+    /// <summary>
+    /// This only gets called for function statements and not for methods, even
+    /// thought methods are parsed into `FunctionStmt`s.
+    /// </summary>
     public Unit VisitFunctionStmt(FunctionStmt node)
     {
-        LoxFunction fn = new LoxFunction(node, environment);
+        LoxFunction fn = new LoxFunction(node, environment, false);
         environment.Define(node.Name.Lexeme, fn);
         return new();
     }
@@ -489,7 +508,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
     {
         if (locals.TryGetValue(expr, out int distance))
         {
-            return environment.GetAt(distance, name);
+            return environment.GetAt(distance, name.Lexeme);
         }
         else
         {

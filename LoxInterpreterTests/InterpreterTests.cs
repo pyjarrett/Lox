@@ -195,18 +195,35 @@ for (var i = 0; i < 10; i = i + 1) {
     [Fact]
     public void TestFields()
     {
-        VerifyOutput(@"", @"class Point {
-    squared_distance_from_origin() {
-        return this.x * this.x + this.y * this.y; 
+        VerifyOutput(@"10
+", @"class Foo {}
+var p = Foo();
+p.bar = 10;
+print p.bar;");
     }
 
-// var p = Point();
-// p.x = 3;
-// p.y = 4;
+    [Fact]
+    public void TestMethods()
+    {
+        VerifyOutput(@"3
+4
+25
+", @"class Point {
+    init(xi, yi) {
+        this.x = xi;
+        this.y = yi;
+    }
 
-// print p.x;
-// print p.y;
-}");
+    squaredDistanceFromOrigin() {
+        return this.x * this.x + this.y * this.y; 
+    }
+}
+
+var p = Point(3, 4);
+print p.x;
+print p.y;
+print p.squaredDistanceFromOrigin();
+");
     }
 
     private void VerifyThrows(Type exception, string text)

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices.JavaScript;
 using LoxAst;
 using LoxLexer;
 
@@ -31,6 +32,16 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     public Unit VisitLiteralExpr(LiteralExpr node)
     {
         return new();
+    }
+
+    public Unit VisitThisExpr(ThisExpr node)
+    {
+        if (classContext == ClassType.None)
+        {
+            _interpreter.Error(node.Keyword, "Cannot use 'this' outside of a class.");
+        }
+        ResolveLocal(node, node.Keyword);
+        return new Unit();
     }
 
     /// <summary>
@@ -148,8 +159,25 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
 
     public Unit VisitClassStmt(ClassStmt node)
     {
+        ClassType enclosingClass = classContext;
+        classContext = ClassType.Class;
+        
         Declare(node.Name);
         Define(node.Name);
+
+        // Make a new scope for `this` and declare that it exists.
+        BeginScope();
+        CurrentScope()["this"] = true;
+        
+        foreach (var method in node.Methods)
+        {
+            var functionType = method.Name.Lexeme.Equals("init") ? FunctionType.Initializer : FunctionType.Method;
+            ResolveFunction(method, functionType);
+        }
+
+        EndScope();
+
+        classContext = ClassType.None;
         return new();
     }
 
@@ -164,13 +192,17 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     public Unit VisitReturnStmt(ReturnStmt node)
     {
         // Can't have a `return` at the top level, outside of all functions.
-        if (currentFunction == FunctionType.None)
+        if (functionContext == FunctionType.None)
         {
             _interpreter.Error(node.Keyword, "Return must be inside a function.");
         }
         
         if (node.Value != null)
         {
+            if (functionContext == FunctionType.Initializer)
+            {
+                _interpreter.Error(node.Keyword, "Cannot return from an initializer.");
+            }
             Resolve(node.Value);
         }
 
@@ -211,8 +243,8 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     private void ResolveFunction(FunctionStmt node, FunctionType functionType)
     {
         // Preserve previous function type due to possibly nested functions.
-        FunctionType enclosingFunction = currentFunction;
-        currentFunction = functionType;
+        FunctionType enclosingFunction = functionContext;
+        functionContext = functionType;
         
         BeginScope();
         foreach (var param in node.Params)
@@ -225,7 +257,7 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         EndScope();
         
         // Restore previous function type.
-        currentFunction = enclosingFunction;
+        functionContext = enclosingFunction;
     }
 
     private void Resolve(IStmt? node)
@@ -289,8 +321,17 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     private enum FunctionType
     {
         None,
-        Function
+        Function,
+        Method,
+        Initializer,
     }
 
-    private FunctionType currentFunction = FunctionType.None;
+    private enum ClassType
+    {
+        None,
+        Class,
+    }
+
+    private FunctionType functionContext = FunctionType.None;
+    private ClassType classContext = ClassType.None;
 }

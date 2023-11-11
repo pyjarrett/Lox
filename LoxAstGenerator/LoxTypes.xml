@@ -55,6 +55,11 @@
                         <Variable Type="IExpr" Name="Value"/>
                     </Variables>
                 </SubType>
+                <SubType Name="This">
+                    <Variables>
+                        <Variable Type="Token" Name="Keyword"/>
+                    </Variables>
+                </SubType>
                 <SubType Name="Assignment">
                     <Variables>
                         <Variable Type="Token" Name="Name"/>

@@ -4,10 +4,11 @@ namespace LoxInterpreter;
 
 public class LoxFunction : LoxCallable
 {
-    public LoxFunction(FunctionStmt decl, Environment env)
+    public LoxFunction(FunctionStmt decl, Environment env, bool initializer)
     {
         declaration = decl;
         closure = env;
+        isInitializer = initializer;
     }
 
     public object? Call(Interpreter interpreter, List<object?> arguments)
@@ -21,7 +22,8 @@ public class LoxFunction : LoxCallable
         try
         {
             interpreter.ExecuteBlock(declaration.Body, environment);
-            return null;
+
+            return isInitializer ? closure.GetAt(0, "this") : null;
         }
         catch (ReturnJump jump)
         {
@@ -34,6 +36,13 @@ public class LoxFunction : LoxCallable
         return declaration.Params.Count;
     }
 
+    public LoxFunction Bind(LoxInstance instance)
+    {
+        Environment boundEnvironment = new(closure);
+        boundEnvironment.Define("this", instance);
+        return new LoxFunction(this.declaration, boundEnvironment, isInitializer);
+    }
+
     public override string ToString()
     {
         return $"<fn {declaration.Name.Lexeme}>";
@@ -41,4 +50,5 @@ public class LoxFunction : LoxCallable
 
     private FunctionStmt declaration;
     private Environment closure;
+    private bool isInitializer = false;
 }

@@ -31,6 +31,11 @@ public class AstPrinterVisitor : IExprVisitor<string>, IStmtVisitor<string>
         return $"{node.Value}";
     }
 
+    public string VisitThisExpr(ThisExpr node)
+    {
+        return "this";
+    }
+
     public string VisitVariableExpr(VariableExpr node)
     {
         return $"VAR:{node.Name.Lexeme}";
@@ -92,6 +97,7 @@ public class AstPrinterVisitor : IExprVisitor<string>, IStmtVisitor<string>
         {
             elseBranch = node.ElseBranch.Accept(this);
         }
+
         Pop();
         return $"if\n{thenBranch}\nelse\n{elseBranch}\n";
     }
