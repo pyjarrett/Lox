@@ -2,13 +2,16 @@
 
 public class LoxClass : LoxCallable
 {
+    private LoxClass? Superclass { get; init; }
+    
     public String Name { get; init; }
 
     public Dictionary<string, LoxFunction> Methods { get; init; }
 
-    public LoxClass(string name, Dictionary<string, LoxFunction> methods)
+    public LoxClass(string name, LoxClass? superclass, Dictionary<string, LoxFunction>? methods)
     {
         Name = name;
+        Superclass = superclass;
         Methods = methods;
     }
     
@@ -52,6 +55,13 @@ public class LoxClass : LoxCallable
             return Methods[name];
         }
 
+        // The method doesn't exist locally, so forward it upward the
+        // inheritance chain.
+        if (Superclass != null)
+        {
+            return Superclass.FindMethod(name);
+        }
+        
         return null;
     }
 }

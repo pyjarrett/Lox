@@ -55,6 +55,12 @@
                         <Variable Type="IExpr" Name="Value"/>
                     </Variables>
                 </SubType>
+                <SubType Name="Super">
+                    <Variables>
+                        <Variable Type="Token" Name="Keyword"/>
+                        <Variable Type="Token" Name="Method"/>
+                    </Variables>
+                </SubType>
                 <SubType Name="This">
                     <Variables>
                         <Variable Type="Token" Name="Keyword"/>
@@ -124,6 +130,7 @@
                 <SubType Name="Class">
                     <Variables>
                         <Variable Type="Token" Name="Name"/>
+                        <Variable Type="VariableExpr?" Name="Superclass"/>
                         <Variable Type="List&lt;FunctionStmt&gt;" Name="Methods"/>
                     </Variables>
                 </SubType>

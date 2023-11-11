@@ -130,13 +130,15 @@ public class FunctionStmt : IStmt {
 
 public class ClassStmt : IStmt {
 
-    public ClassStmt(Token Name, List<FunctionStmt> Methods)
+    public ClassStmt(Token Name, VariableExpr? Superclass, List<FunctionStmt> Methods)
     {
         this.Name = Name;
+        this.Superclass = Superclass;
         this.Methods = Methods;
     }
 
     public Token Name { get; set; }
+    public VariableExpr? Superclass { get; set; }
     public List<FunctionStmt> Methods { get; set; }
 
     public TRetType Accept<TRetType>(IStmtVisitor<TRetType> visitor) {

@@ -216,6 +216,23 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
         return node.Value;
     }
 
+    public object? VisitSuperExpr(SuperExpr node)
+    {
+        int distance = locals[node];
+        LoxClass? superclass = (LoxClass)environment!.GetAt(distance, "super");
+        
+        // The object will be in the next environment.
+        LoxInstance? obj = (LoxInstance)environment!.GetAt(distance - 1, "this");
+
+        LoxFunction? fn = superclass.FindMethod(node.Method.Lexeme);
+
+        if (fn == null)
+        {
+            throw new RuntimeError(node.Method, $"Undefined property {node.Method.Lexeme}.");
+        }
+        return fn.Bind(obj);
+    }
+
     /// <summary>
     /// Look up `this` like it's any other variable.
     /// </summary>
@@ -359,15 +376,34 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<Unit>
 
     public Unit VisitClassStmt(ClassStmt node)
     {
+        object? superclass = null;
+        if (node.Superclass != null)
+        {
+            superclass = Evaluate(node.Superclass);
+            if (superclass is not LoxClass)
+            {
+                Error(node.Name, "Superclass must be a class.");
+            }
+        }
+        
         var className = node.Name.Lexeme;
-
         environment.Define(className, null);
+        if (node.Superclass != null)
+        {
+            environment = new Environment(environment);
+            environment.Define("super", superclass);
+        }
         Dictionary<string, LoxFunction> methods = new();
         foreach (FunctionStmt method in node.Methods)
         {
             methods[method.Name.Lexeme] = new LoxFunction(method, environment, method.Name.Lexeme.Equals("init"));
         }
-        LoxClass klass = new(className, methods);
+        LoxClass klass = new(className, superclass as LoxClass, methods);
+        if (node.Superclass != null)
+        {
+            environment = environment.Enclosing;
+        }
+
         environment.Assign(node.Name, klass);
 
         return new();

@@ -276,6 +276,13 @@ public class Parser
     private IStmt ClassDeclarationStatement()
     {
         Token className = Consume(TokenKind.Identifier, "Expected a class name.");
+        VariableExpr? superclass = null;
+
+        if (Match(TokenKind.LessThan))
+        {
+            Consume(TokenKind.Identifier, "Expected a superclass name.");
+            superclass = new VariableExpr(Previous());
+        }
 
         Consume(TokenKind.LeftBrace, "Expected '{' after class name.");
 
@@ -289,7 +296,7 @@ public class Parser
         
         Consume(TokenKind.RightBrace, "Expected '}' after class.");
 
-        return new ClassStmt(className, methods);
+        return new ClassStmt(className, superclass, methods);
     }
 
     /// <summary>
@@ -555,6 +562,14 @@ public class Parser
             return new LoxAst.LiteralExpr(Previous().Literal!);
         }
 
+        if (Match(TokenKind.Super))
+        {
+            Token keyword = Previous();
+            Consume(TokenKind.Dot, "Expect '.' after super.");
+            Token method = Consume(TokenKind.Identifier, "Expected superclass method.");
+            return new LoxAst.SuperExpr(keyword, method);
+        }
+        
         if (Match(TokenKind.This))
         {
             return new LoxAst.ThisExpr(Previous());

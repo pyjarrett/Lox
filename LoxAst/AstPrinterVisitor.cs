@@ -31,6 +31,11 @@ public class AstPrinterVisitor : IExprVisitor<string>, IStmtVisitor<string>
         return $"{node.Value}";
     }
 
+    public string VisitSuperExpr(SuperExpr node)
+    {
+        return $"super.{node.Method.Lexeme}";
+    }
+    
     public string VisitThisExpr(ThisExpr node)
     {
         return "this";

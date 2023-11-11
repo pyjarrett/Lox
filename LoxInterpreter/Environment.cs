@@ -21,7 +21,7 @@ public class Environment
     /// </summary>
     public Environment(Environment? parent = null)
     {
-        enclosing = parent;
+        Enclosing = parent;
     }
 
     /// <summary>
@@ -35,12 +35,12 @@ public class Environment
             return values[identifier];
         }
 
-        if (enclosing == null)
+        if (Enclosing == null)
         {
             throw new RuntimeError(name, $"Unknown variable: '{identifier}'");
         }
 
-        return enclosing.Get(name);
+        return Enclosing.Get(name);
     }
 
     public object? GetAt(int distance, string name)
@@ -58,7 +58,7 @@ public class Environment
         Environment? ancestor = this;
         for (var i = 0; i < distance; ++i)
         {
-            ancestor = ancestor!.enclosing;
+            ancestor = ancestor!.Enclosing;
         }
 
         return ancestor;
@@ -80,13 +80,13 @@ public class Environment
         {
             values[identifier] = value;
         }
-        else if (enclosing == null)
+        else if (Enclosing == null)
         {
             throw new RuntimeError(name, $"Undefined identifier: '{name.Lexeme}'");
         }
         else
         {
-            enclosing.Assign(name, value);
+            Enclosing.Assign(name, value);
         }
     }
 
@@ -98,6 +98,7 @@ public class Environment
     /// <summary>
     /// The parent scope of this environment.
     /// </summary>
-    private Environment? enclosing = null;
+    public Environment? Enclosing { get; private set; } = null;
+
     private Dictionary<string, object?> values = new();
 }

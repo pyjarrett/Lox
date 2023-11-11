@@ -34,12 +34,28 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         return new();
     }
 
+    public Unit VisitSuperExpr(SuperExpr node)
+    {
+        if (classContext == ClassType.None)
+        {
+            _interpreter.Error(node.Keyword, "Can't use super outside of a class.");
+        }
+        else if (classContext != ClassType.Subclass)
+        {
+            _interpreter.Error(node.Keyword, "Can't use super in a class without a superclass.");
+        }
+
+        ResolveLocal(node, node.Keyword);
+        return new Unit();
+    }
+
     public Unit VisitThisExpr(ThisExpr node)
     {
         if (classContext == ClassType.None)
         {
             _interpreter.Error(node.Keyword, "Cannot use 'this' outside of a class.");
         }
+
         ResolveLocal(node, node.Keyword);
         return new Unit();
     }
@@ -161,14 +177,28 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     {
         ClassType enclosingClass = classContext;
         classContext = ClassType.Class;
-        
+
         Declare(node.Name);
         Define(node.Name);
+
+        if (node.Superclass != null)
+        {
+            BeginScope();
+            CurrentScope().Add("super", true);
+
+            if (node.Superclass.Name.Lexeme == node.Name.Lexeme)
+            {
+                _interpreter.Error(node.Superclass.Name, "A class can't inherit from itself.");
+            }
+
+            classContext = ClassType.Subclass;
+            Resolve(node.Superclass);
+        }
 
         // Make a new scope for `this` and declare that it exists.
         BeginScope();
         CurrentScope()["this"] = true;
-        
+
         foreach (var method in node.Methods)
         {
             var functionType = method.Name.Lexeme.Equals("init") ? FunctionType.Initializer : FunctionType.Method;
@@ -177,7 +207,12 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
 
         EndScope();
 
-        classContext = ClassType.None;
+        if (node.Superclass != null)
+        {
+            EndScope();
+        }
+
+        classContext = enclosingClass;
         return new();
     }
 
@@ -196,13 +231,14 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         {
             _interpreter.Error(node.Keyword, "Return must be inside a function.");
         }
-        
+
         if (node.Value != null)
         {
             if (functionContext == FunctionType.Initializer)
             {
                 _interpreter.Error(node.Keyword, "Cannot return from an initializer.");
             }
+
             Resolve(node.Value);
         }
 
@@ -217,6 +253,7 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         {
             _interpreter.Error(name, "Already a variable with this name in this scope.");
         }
+
         CurrentScope()[name.Lexeme] = false;
     }
 
@@ -245,7 +282,7 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         // Preserve previous function type due to possibly nested functions.
         FunctionType enclosingFunction = functionContext;
         functionContext = functionType;
-        
+
         BeginScope();
         foreach (var param in node.Params)
         {
@@ -255,7 +292,7 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
 
         Resolve(node.Body);
         EndScope();
-        
+
         // Restore previous function type.
         functionContext = enclosingFunction;
     }
@@ -266,6 +303,7 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
         {
             return;
         }
+
         node.Accept(this);
     }
 
@@ -330,6 +368,7 @@ public class Resolver : IExprVisitor<Unit>, IStmtVisitor<Unit>
     {
         None,
         Class,
+        Subclass,
     }
 
     private FunctionType functionContext = FunctionType.None;

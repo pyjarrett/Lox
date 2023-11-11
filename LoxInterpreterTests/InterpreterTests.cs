@@ -81,13 +81,7 @@ public class InterpreterTests
     [Fact]
     public void TestStringIsNotCallable()
     {
-        VerifyThrows(typeof(RuntimeError), "\"notCallable\"(1, nil, \"param\")");
-    }
-
-    [Fact]
-    public void TestParseError()
-    {
-        VerifyThrows(typeof(ParseError), "(5.0");
+        VerifyThrows(typeof(RuntimeError), "\"notCallable\"(1, nil, \"param\");");
     }
 
     [Fact]
@@ -226,12 +220,75 @@ print p.squaredDistanceFromOrigin();
 ");
     }
 
+    [Fact]
+    public void TestReturnWithValueInInitializer()
+    {
+        VerifyHasError(@"class Foo {
+    init() {
+        return 10;
+    }
+}");
+    }
+
+    [Fact]
+    public void TestInvalidReturnFromTopLevel()
+    {
+        VerifyHasError("return;");
+    }
+
+    [Fact]
+    public void TestInheritedMethods()
+    {
+        VerifyOutput(@"foo-top
+foo-top
+foo-mid
+foo-top
+foo-mid
+foo-bottom
+", @"class Top {
+    foo() {
+        print ""foo-top"";
+    }
+}
+
+class Mid < Top {
+    foo() {
+        super.foo();
+        print ""foo-mid"";
+    }
+}
+
+class Bottom < Mid {
+    foo() {
+        super.foo();
+        print ""foo-bottom"";
+    }
+
+    bottom() {
+        print ""bottom"";
+    }
+}
+
+var t = Top();
+t.foo();
+
+var m = Mid();
+m.foo();
+
+var b = Bottom();
+b.foo();
+");
+    }
+
     private void VerifyThrows(Type exception, string text)
     {
         Lexer lexer = new Lexer(text);
         Parser parser = new Parser(lexer.ScanTokens());
         Interpreter interpreter = new Interpreter();
-        Assert.Throws(exception, () => interpreter.Evaluate(parser.Expression()));
+        Resolver resolver = new Resolver(interpreter);
+        List<IStmt?> statements = parser.Parse();
+        resolver.Resolve(statements);
+        Assert.Throws(exception, () => interpreter.Interpret(statements));
     }
 
     private void VerifyEvaluation(object? expected, string text)
@@ -256,12 +313,29 @@ print p.squaredDistanceFromOrigin();
         {
             ast += stmt?.Accept(printer);
         }
+
         Console.WriteLine(ast);
-        
+
         Resolver resolver = new Resolver(interpreter);
         resolver.Resolve(statements);
         interpreter.Interpret(statements);
         Assert.Equal("", testLog.ErrorLog);
         Assert.Equal(expected, testLog.OutputLog);
+    }
+
+    private void VerifyHasError(string input)
+    {
+        StringBufferOutput testLog = new StringBufferOutput();
+        Lexer lexer = new Lexer(input);
+        Parser parser = new Parser(lexer.ScanTokens());
+        var statements = parser.Parse();
+        Interpreter interpreter = new Interpreter(testLog);
+        Resolver resolver = new Resolver(interpreter);
+        resolver.Resolve(statements);
+        if (!interpreter.HasError)
+        {
+            interpreter.Interpret(statements);
+            Assert.NotEqual("", testLog.ErrorLog);
+        }
     }
 }

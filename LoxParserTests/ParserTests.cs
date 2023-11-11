@@ -50,4 +50,18 @@ public class ParserTests
         AstPrinterVisitor astVisitor = new();
         Assert.Equal("(/ (group (+ 1 2)) (group (- (group (* 3 4)) (- (- 5)))))", expr.Accept(astVisitor));
     }
+    
+    [Fact]
+    public void TestParseError()
+    {
+        VerifyParserThrows(typeof(ParseError), "(5.0");
+    }
+    
+    private void VerifyParserThrows(Type exception, string text)
+    {
+        Lexer lexer = new Lexer(text);
+        Parser parser = new Parser(lexer.ScanTokens());
+        Assert.Throws(exception, () => parser.Parse());
+    }
+
 }
